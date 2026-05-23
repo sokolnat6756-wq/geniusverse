@@ -40,18 +40,17 @@ const ICON_BY_SLUG: Record<string, LucideIcon> = {
   biznesgeniy: Briefcase,
 };
 
-// Statically declared so Tailwind JIT picks the classes up.
-const GRADIENT_BY_CATEGORY: Record<string, string> = {
-  school: "from-violet-500 to-blue-500",
-  kids: "from-pink-500 to-orange-400",
-  adult: "from-emerald-500 to-slate-600",
-};
+// Single unified gradient for ALL Genius icons across the platform.
+export const GENIUS_ICON_GRADIENT = "from-blue-500 to-violet-600";
 
-const DEFAULT_GRADIENT = "from-violet-500 to-blue-500";
+export function getGeniusIcon(slug: string): LucideIcon {
+  return ICON_BY_SLUG[slug] ?? Sparkles;
+}
 
-export function getGeniusVisual(slug: string, category: string) {
+// Backward-compatible helper — gradient is now constant.
+export function getGeniusVisual(slug: string, _category?: string) {
   return {
-    Icon: ICON_BY_SLUG[slug] ?? Sparkles,
-    gradientClass: GRADIENT_BY_CATEGORY[category] ?? DEFAULT_GRADIENT,
+    Icon: getGeniusIcon(slug),
+    gradientClass: GENIUS_ICON_GRADIENT,
   };
 }

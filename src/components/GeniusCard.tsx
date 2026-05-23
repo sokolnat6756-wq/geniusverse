@@ -27,7 +27,7 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
       <div className="flex items-start justify-between">
         <div
           className={cn(
-            "grid h-12 w-12 place-items-center rounded-xl shadow-soft transition-transform duration-300",
+            "grid h-12 w-12 place-items-center rounded-2xl shadow-soft transition-transform duration-300",
             unlocked
               ? `bg-gradient-to-br ${gradientClass} ring-1 ring-white/50 group-hover:scale-105`
               : "bg-muted ring-1 ring-white/30",
