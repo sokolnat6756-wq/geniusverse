@@ -172,8 +172,8 @@ function DashboardPage() {
                   className="text-left rounded-xl border p-4 transition-all hover:border-primary hover:shadow-soft disabled:opacity-50"
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br ${gradientClass} shadow-soft`}>
-                      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                    <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${gradientClass} shadow-soft ring-1 ring-white/50`}>
+                      <Icon className="h-6 w-6 text-white" strokeWidth={2} />
                     </div>
                     <div>
                       <div className="font-semibold">{g.name}</div>
