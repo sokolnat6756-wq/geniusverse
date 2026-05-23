@@ -173,9 +173,10 @@
 }
 @utility hover-lift {
   transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-elegant);
+  }
 }
-.hover-lift:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: var(--shadow-elegant);
-}
+
 
