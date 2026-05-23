@@ -64,52 +64,56 @@ function DashboardPage() {
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}
-        <div className="rounded-3xl bg-gradient-hero p-8 md:p-10 text-primary-foreground shadow-elegant">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="text-sm opacity-80">Добро пожаловать</p>
-              <h1 className="text-2xl md:text-3xl font-bold mt-1">
-                {profile?.full_name || profile?.email || "Гений"}
-              </h1>
-              <p className="opacity-80 text-sm mt-1">{profile?.email}</p>
+        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-hero p-8 md:p-10 text-primary-foreground shadow-elegant">
+          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-white/15 blur-3xl" aria-hidden />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" aria-hidden />
+          <div className="relative">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="text-sm opacity-80">Добро пожаловать</p>
+                <h1 className="text-2xl md:text-3xl font-bold mt-1 tracking-tight">
+                  {profile?.full_name || profile?.email || "Гений"}
+                </h1>
+                <p className="opacity-80 text-sm mt-1">{profile?.email}</p>
+              </div>
+              <div className="glass-panel-dark rounded-2xl px-5 py-4 text-right">
+                <p className="text-xs uppercase tracking-wider opacity-80">Текущий тариф</p>
+                <p className="text-lg font-semibold mt-1">{planLabel}</p>
+                {subscription && (
+                  <p className="text-xs opacity-80 mt-0.5">
+                    Активирован {new Date(subscription.created_at).toLocaleDateString("ru-RU")}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs uppercase tracking-wider opacity-70">Текущий тариф</p>
-              <p className="text-lg font-semibold mt-1">{planLabel}</p>
-              {subscription && (
-                <p className="text-xs opacity-70 mt-0.5">
-                  Активирован {new Date(subscription.created_at).toLocaleDateString("ru-RU")}
-                </p>
-              )}
-            </div>
-          </div>
 
-          {!subscription && (
-            <div className="mt-6">
-              <Link to="/pricing">
-                <Button variant="secondary" size="lg">
-                  Выбрать тариф <ArrowRight className="ml-2 h-4 w-4" />
+            {!subscription && (
+              <div className="mt-6">
+                <Link to="/pricing">
+                  <Button variant="secondary" size="lg" className="active:scale-[0.98] transition-transform">
+                    Выбрать тариф <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {subscription?.plan_slug === "one_genius" && !selectedOneGenius && (
+              <div className="mt-6 glass-panel-dark rounded-2xl p-4">
+                <p className="text-sm">Вы ещё не выбрали своего Гения для тарифа «Один Гений».</p>
+                <Button onClick={() => setPickerOpen(true)} variant="secondary" size="sm" className="mt-3">
+                  <Sparkles className="mr-2 h-4 w-4" /> Выбрать Гения
                 </Button>
-              </Link>
-            </div>
-          )}
-
-          {subscription?.plan_slug === "one_genius" && !selectedOneGenius && (
-            <div className="mt-6 rounded-2xl bg-white/10 p-4 backdrop-blur">
-              <p className="text-sm">Вы ещё не выбрали своего Гения для тарифа «Один Гений».</p>
-              <Button onClick={() => setPickerOpen(true)} variant="secondary" size="sm" className="mt-3">
-                <Sparkles className="mr-2 h-4 w-4" /> Выбрать Гения
-              </Button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Geniuses */}
         <div className="mt-10">
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Ваши Гении</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 className="text-2xl font-bold tracking-tight">Ваши Гении</h2>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 Доступные ассистенты выделены, остальные — открываются при апгрейде тарифа.
               </p>
             </div>
@@ -132,16 +136,18 @@ function DashboardPage() {
           </div>
 
           {planSlug !== "full" && (
-            <div className="mt-10 rounded-3xl bg-gradient-soft p-8 text-center">
-              <h3 className="text-xl font-bold">Хотите ещё больше?</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Откройте полный доступ ко всем Гениям и будущим обновлениям.
-              </p>
-              <Link to="/pricing" className="inline-block mt-4">
-                <Button className="bg-gradient-hero text-primary-foreground shadow-soft">
-                  Открыть полный доступ
-                </Button>
-              </Link>
+            <div className="relative mt-10 overflow-hidden rounded-[2rem] bg-gradient-mesh p-1">
+              <div className="glass-panel-strong rounded-[1.85rem] p-8 text-center">
+                <h3 className="text-xl font-bold tracking-tight">Хотите ещё больше?</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Откройте полный доступ ко всем Гениям и будущим обновлениям.
+                </p>
+                <Link to="/pricing" className="inline-block mt-4">
+                  <Button className="bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">
+                    Открыть полный доступ
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
         </div>
