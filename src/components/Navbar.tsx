@@ -16,25 +16,25 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-white/50 shadow-[0_1px_0_0_rgba(255,255,255,0.6)]">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft">
+        <Link to="/" className="group flex items-center gap-2 font-semibold">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft transition-transform duration-300 group-hover:scale-105">
             <Sparkles className="h-5 w-5" />
           </span>
           <span className="text-lg tracking-tight">Академия Гениев</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          <Link to="/" className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link to="/" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             Главная
           </Link>
-          <Link to="/pricing" className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link to="/pricing" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             Тарифы
           </Link>
           {session ? (
             <>
-              <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+              <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
                 Кабинет
               </Link>
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
@@ -44,7 +44,7 @@ export function Navbar() {
               {!loading && (
                 <>
                   <Link to="/login"><Button variant="ghost">Войти</Button></Link>
-                  <Link to="/register"><Button className="bg-gradient-hero text-primary-foreground shadow-soft">Начать</Button></Link>
+                  <Link to="/register"><Button className="bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">Начать</Button></Link>
                 </>
               )}
             </>
@@ -61,7 +61,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-border/60 bg-background">
+        <div className="md:hidden glass-panel border-t border-white/50 rounded-b-3xl">
           <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4">
             <Link to="/" onClick={() => setOpen(false)} className="py-2">Главная</Link>
             <Link to="/pricing" onClick={() => setOpen(false)} className="py-2">Тарифы</Link>

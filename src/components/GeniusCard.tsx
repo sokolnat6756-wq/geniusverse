@@ -18,10 +18,10 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
   return (
     <div
       className={cn(
-        "group flex flex-col rounded-2xl border bg-card p-6 transition-all duration-300",
+        "group flex flex-col rounded-3xl p-6 transition-all duration-300 ease-out",
         unlocked
-          ? "border-border/60 shadow-soft hover:shadow-elegant hover:-translate-y-1"
-          : "border-dashed border-border/60 bg-muted/30",
+          ? "glass-panel hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant"
+          : "rounded-3xl border border-dashed border-border/60 bg-white/40 backdrop-blur-md",
       )}
     >
       <div className="flex items-start justify-between">
