@@ -17,6 +17,7 @@ export type Database = {
       geniuses: {
         Row: {
           category: string
+          chatgpt_url: string | null
           created_at: string
           emoji: string
           id: string
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          chatgpt_url?: string | null
           created_at?: string
           emoji: string
           id?: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          chatgpt_url?: string | null
           created_at?: string
           emoji?: string
           id?: string
