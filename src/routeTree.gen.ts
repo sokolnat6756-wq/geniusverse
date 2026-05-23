@@ -20,7 +20,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSuccessRouteImport } from './routes/_authenticated/success'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
-import { Route as AuthenticatedChatPlaceholderRouteImport } from './routes/_authenticated/chat-placeholder'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -76,12 +75,6 @@ const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedChatPlaceholderRoute =
-  AuthenticatedChatPlaceholderRouteImport.update({
-    id: '/chat-placeholder',
-    path: '/chat-placeholder',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,7 +84,6 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
-  '/chat-placeholder': typeof AuthenticatedChatPlaceholderRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/success': typeof AuthenticatedSuccessRoute
@@ -104,7 +96,6 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
-  '/chat-placeholder': typeof AuthenticatedChatPlaceholderRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/success': typeof AuthenticatedSuccessRoute
@@ -119,7 +110,6 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/register': typeof RegisterRoute
-  '/_authenticated/chat-placeholder': typeof AuthenticatedChatPlaceholderRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/success': typeof AuthenticatedSuccessRoute
@@ -134,7 +124,6 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/register'
-    | '/chat-placeholder'
     | '/checkout'
     | '/dashboard'
     | '/success'
@@ -147,7 +136,6 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/register'
-    | '/chat-placeholder'
     | '/checkout'
     | '/dashboard'
     | '/success'
@@ -161,7 +149,6 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/register'
-    | '/_authenticated/chat-placeholder'
     | '/_authenticated/checkout'
     | '/_authenticated/dashboard'
     | '/_authenticated/success'
@@ -257,25 +244,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/chat-placeholder': {
-      id: '/_authenticated/chat-placeholder'
-      path: '/chat-placeholder'
-      fullPath: '/chat-placeholder'
-      preLoaderRoute: typeof AuthenticatedChatPlaceholderRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
   }
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedChatPlaceholderRoute: typeof AuthenticatedChatPlaceholderRoute
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSuccessRoute: typeof AuthenticatedSuccessRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedChatPlaceholderRoute: AuthenticatedChatPlaceholderRoute,
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSuccessRoute: AuthenticatedSuccessRoute,
@@ -298,3 +276,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
