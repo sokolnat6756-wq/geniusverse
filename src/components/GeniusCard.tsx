@@ -29,8 +29,8 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
           className={cn(
             "grid h-12 w-12 place-items-center rounded-xl shadow-soft transition-transform duration-300",
             unlocked
-              ? `bg-gradient-to-br ${gradientClass} group-hover:scale-105`
-              : "bg-muted",
+              ? `bg-gradient-to-br ${gradientClass} ring-1 ring-white/50 group-hover:scale-105`
+              : "bg-muted ring-1 ring-white/30",
           )}
         >
           <Icon
