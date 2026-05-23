@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 export function Footer() {
   return (
     <footer className="border-t border-border/60 bg-gradient-soft mt-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-8 md:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-8 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2 font-semibold">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-hero text-primary-foreground">
@@ -22,6 +22,13 @@ export function Footer() {
             <li><Link to="/" className="hover:text-foreground">Главная</Link></li>
             <li><Link to="/pricing" className="hover:text-foreground">Тарифы</Link></li>
             <li><Link to="/login" className="hover:text-foreground">Войти</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-3">Правовая информация</h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><Link to="/privacy" className="hover:text-foreground">Политика конфиденциальности</Link></li>
+            <li><Link to="/offer" className="hover:text-foreground">Публичная оферта</Link></li>
           </ul>
         </div>
         <div>

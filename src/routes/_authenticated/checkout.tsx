@@ -86,6 +86,10 @@ function CheckoutPage() {
               >
                 {submitting ? "Активируем..." : "Оплатить тестово"}
               </Button>
+              <p className="mt-3 text-xs text-muted-foreground text-center">
+                Нажимая «Оплатить», вы принимаете условия{" "}
+                <Link to="/offer" className="text-primary hover:underline">оферты</Link>.
+              </p>
             </>
           )}
         </div>

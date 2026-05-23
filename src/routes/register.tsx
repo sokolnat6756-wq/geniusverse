@@ -78,6 +78,12 @@ function RegisterPage() {
           <Button type="submit" disabled={loading} className="w-full bg-gradient-hero text-primary-foreground shadow-soft">
             {loading ? "Создаём..." : "Создать аккаунт"}
           </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Создавая аккаунт, вы соглашаетесь с{" "}
+            <Link to="/privacy" className="text-primary hover:underline">Политикой конфиденциальности</Link>
+            {" "}и{" "}
+            <Link to="/offer" className="text-primary hover:underline">Публичной офертой</Link>.
+          </p>
         </form>
 
         <div className="mt-4 text-sm text-center text-muted-foreground">
