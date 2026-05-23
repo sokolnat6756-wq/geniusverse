@@ -1,5 +1,5 @@
-import { Lock } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ExternalLink, Lock } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -57,15 +57,23 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
       </p>
 
       {unlocked ? (
-        <Link
-          to="/chat-placeholder"
-          search={{ genius: genius.slug }}
+        <a
+          href={genius.chatgpt_url ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-5"
+          aria-disabled={!genius.chatgpt_url}
+          onClick={(e) => {
+            if (!genius.chatgpt_url) e.preventDefault();
+          }}
         >
-          <Button className="w-full bg-gradient-hero text-primary-foreground shadow-soft">
-            Открыть чат
+          <Button
+            className="w-full bg-gradient-hero text-primary-foreground shadow-soft gap-2"
+            disabled={!genius.chatgpt_url}
+          >
+            Открыть в ChatGPT <ExternalLink className="h-4 w-4" />
           </Button>
-        </Link>
+        </a>
       ) : (
         <Button
           variant="outline"

@@ -1,30 +1,46 @@
-## Цель
-Унифицировать визуал всех иконок Гениев: один градиент `from-blue-500 to-violet-600`, белая иконка, `rounded-2xl`, одинаковый размер/padding/тень. Убрать категорийные цвета (зелёный/розовый/слейт).
+# Pivot to External ChatGPT Access Hub
 
-## Изменения
+The dashboard becomes a closed members area that hands out links to Custom GPTs. No internal AI chat for now.
 
-### 1. `src/lib/genius-icons.tsx`
-- Убрать `GRADIENT_BY_CATEGORY` и параметр `category` из `getGeniusVisual`.
-- Экспортировать единую константу `GENIUS_ICON_GRADIENT = "from-blue-500 to-violet-600"` (для использования в карточках) и `getGeniusIcon(slug)` возвращающий только `Icon`.
-- Оставить fallback `Sparkles`.
+## 1. Database
 
-### 2. `src/components/GeniusCard.tsx`
-- Иконочный контейнер: `rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 ring-1 ring-white/50 shadow-soft` — одинаково для unlocked. Для locked: тот же `rounded-2xl`, но `bg-muted` (иконка `text-muted-foreground`) — единый размер/радиус/тень сохраняем.
-- Размер: `h-12 w-12`, иконка `h-6 w-6 text-white` — без изменений.
+Migration:
+- `ALTER TABLE public.geniuses ADD COLUMN chatgpt_url text;`
+- Seed all 17 existing geniuses with placeholder: `UPDATE public.geniuses SET chatgpt_url = 'https://chat.openai.com/g/g-placeholder' WHERE chatgpt_url IS NULL;`
 
-### 3. `src/routes/index.tsx` (каталог на landing)
-- Заменить инлайн `bg-gradient-to-br ${gradientClass}` на `bg-gradient-to-br from-blue-500 to-violet-600`.
-- Радиус контейнера иконки `rounded-xl` → `rounded-2xl`.
-- Обновить вызов `getGeniusVisual` на новый API (только `Icon`).
+RLS unchanged (public read already allows anon to see the column). No schema changes elsewhere.
 
-### 4. `src/routes/_authenticated/dashboard.tsx` (модалка выбора Гения)
-- В Dialog-пикере: тот же градиент `from-blue-500 to-violet-600`, `rounded-2xl`, размер `h-10 w-10` оставить (это уменьшенный preview в списке — но по требованию "same size everywhere" подгоним до `h-12 w-12` для консистентности с карточками).
-- Обновить вызов `getGeniusVisual`.
+## 2. Types & access layer
 
-### 5. Прочие места — проверено: иконки Гениев нигде больше не рендерятся (pricing/sidebar/auth используют общий `Sparkles` логотип, не иконки Гениев). Pricing и sidebar отдельных Genius-иконок не имеют, изменений не требуют.
+- `src/lib/access.ts` — add `chatgpt_url: string | null` to the `Genius` interface.
+- `src/integrations/supabase/types.ts` regenerates automatically after the migration.
+- `src/lib/public-data.functions.ts` — include `chatgpt_url` in the select (verify; likely `select('*')`, no change needed).
 
-## Что НЕ трогаем
-- Layout, типографика, отступы карточек.
-- Backend/auth/routing/migrations/RLS.
-- Логотип Sparkles в navbar/auth/footer (это бренд, не иконка Гения).
-- Категорийные бейджи (`CATEGORY_LABELS`) — это текст, не цвет иконки.
+## 3. GeniusCard
+
+`src/components/GeniusCard.tsx`:
+- When `unlocked`: replace the `<Link to="/chat-placeholder">` block with an `<a href={genius.chatgpt_url ?? '#'} target="_blank" rel="noopener noreferrer">` wrapping the same gradient button. Button label: **«Открыть в ChatGPT»** with an external-link icon (`ExternalLink` from lucide). If `chatgpt_url` is null, disable the button with tooltip "Ссылка скоро будет".
+- Locked state unchanged: «Открыть доступ» → `onUnlockClick`.
+
+No design/layout/typography changes — same button styling, just different content + anchor.
+
+## 4. Remove internal chat route
+
+- Delete `src/routes/_authenticated/chat-placeholder.tsx`. TanStack Router regenerates the route tree.
+- Grep for any remaining `to="/chat-placeholder"` references and remove (should only be GeniusCard after the edit).
+
+## 5. Dashboard
+
+`src/routes/_authenticated/dashboard.tsx`:
+- Picker dialog: after `selectOneGenius` succeeds, no navigation change needed (it just refreshes dashboard).
+- No other changes — dashboard already renders `GeniusCard` which now opens external links.
+
+## 6. Untouched
+
+- Auth, RLS, plans, mock checkout, `isGeniusUnlocked` logic, pricing page, landing page, glassmorphism design, icons, gradients.
+
+## Technical notes
+
+- Anchor must use `target="_blank" rel="noopener noreferrer"` for security.
+- `chatgpt_url` is nullable so future per-genius URLs can be filled in via SQL without code changes.
+- Later swap to internal chat by reverting GeniusCard's button to a `<Link>` — single-file change.
