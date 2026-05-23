@@ -11,6 +11,7 @@ export interface Genius {
   emoji: string;
   category: string;
   short_description: string;
+  chatgpt_url: string | null;
 }
 
 const FAMILY_ADULT_SLUGS = new Set(["fingeniy", "bloggeniy", "biznesgeniy"]);
