@@ -8,6 +8,7 @@ import { PlanCard } from "@/components/PlanCard";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { getPublicCatalog } from "@/lib/public-data.functions";
 import { CATEGORY_LABELS } from "@/lib/access";
+import { getGeniusVisual } from "@/lib/genius-icons";
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
@@ -101,20 +102,23 @@ function LandingPage() {
           <p className="mt-3 text-center text-muted-foreground">17 наставников по самым важным направлениям</p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {geniuses.map((g) => (
-              <div key={g.id} className="group rounded-2xl border bg-card p-5 shadow-soft transition-all hover:shadow-elegant hover:-translate-y-0.5">
-                <div className="flex items-start justify-between">
-                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-soft text-2xl">
-                    {g.emoji}
+            {geniuses.map((g) => {
+              const { Icon, gradientClass } = getGeniusVisual(g.slug, g.category);
+              return (
+                <div key={g.id} className="group rounded-2xl border border-border/60 bg-card p-6 shadow-soft transition-all duration-300 hover:shadow-elegant hover:-translate-y-1">
+                  <div className="flex items-start justify-between">
+                    <div className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${gradientClass} shadow-soft transition-transform duration-300 group-hover:scale-105`}>
+                      <Icon className="h-6 w-6 text-white" strokeWidth={2} />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {CATEGORY_LABELS[g.category] ?? g.category}
+                    </span>
                   </div>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {CATEGORY_LABELS[g.category] ?? g.category}
-                  </span>
+                  <h3 className="mt-5 font-semibold tracking-tight">{g.name}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{g.short_description}</p>
                 </div>
-                <h3 className="mt-3 font-semibold">{g.name}</h3>
-                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{g.short_description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

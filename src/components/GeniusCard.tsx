@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABELS, type Genius } from "@/lib/access";
+import { getGeniusVisual } from "@/lib/genius-icons";
 
 interface GeniusCardProps {
   genius: Genius;
@@ -12,23 +13,33 @@ interface GeniusCardProps {
 }
 
 export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps) {
+  const { Icon, gradientClass } = getGeniusVisual(genius.slug, genius.category);
+
   return (
     <div
       className={cn(
-        "group flex flex-col rounded-2xl border bg-card p-5 transition-all",
+        "group flex flex-col rounded-2xl border bg-card p-6 transition-all duration-300",
         unlocked
-          ? "border-border shadow-soft hover:shadow-elegant hover:-translate-y-0.5"
-          : "border-dashed border-border/70 bg-muted/30",
+          ? "border-border/60 shadow-soft hover:shadow-elegant hover:-translate-y-1"
+          : "border-dashed border-border/60 bg-muted/30",
       )}
     >
       <div className="flex items-start justify-between">
         <div
           className={cn(
-            "grid h-12 w-12 place-items-center rounded-xl text-2xl",
-            unlocked ? "bg-gradient-soft" : "bg-muted",
+            "grid h-12 w-12 place-items-center rounded-xl shadow-soft transition-transform duration-300",
+            unlocked
+              ? `bg-gradient-to-br ${gradientClass} group-hover:scale-105`
+              : "bg-muted",
           )}
         >
-          {genius.emoji}
+          <Icon
+            className={cn(
+              "h-6 w-6",
+              unlocked ? "text-white" : "text-muted-foreground",
+            )}
+            strokeWidth={2}
+          />
         </div>
         {unlocked ? (
           <Badge variant="secondary" className="text-[10px]">
@@ -40,8 +51,8 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
           </Badge>
         )}
       </div>
-      <h3 className="mt-4 text-base font-semibold">{genius.name}</h3>
-      <p className="mt-1 text-sm text-muted-foreground line-clamp-3 flex-1">
+      <h3 className="mt-5 text-base font-semibold tracking-tight">{genius.name}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-3 flex-1">
         {genius.short_description}
       </p>
 
@@ -49,7 +60,7 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
         <Link
           to="/chat-placeholder"
           search={{ genius: genius.slug }}
-          className="mt-4"
+          className="mt-5"
         >
           <Button className="w-full bg-gradient-hero text-primary-foreground shadow-soft">
             Открыть чат
@@ -58,7 +69,7 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
       ) : (
         <Button
           variant="outline"
-          className="mt-4 w-full"
+          className="mt-5 w-full"
           onClick={onUnlockClick}
         >
           Открыть доступ

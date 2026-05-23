@@ -11,6 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getDashboardData, selectOneGenius } from "@/lib/subscription.functions";
 import { isGeniusUnlocked, PLAN_LABELS } from "@/lib/access";
+import { getGeniusVisual } from "@/lib/genius-icons";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Кабинет — Академия Гениев" }] }),
@@ -155,24 +156,27 @@ function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2 max-h-[60vh] overflow-y-auto pr-1">
-            {geniuses.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => handleChoose(g.slug)}
-                disabled={picking !== null}
-                className="text-left rounded-xl border p-4 transition-all hover:border-primary hover:shadow-soft disabled:opacity-50"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-soft text-xl">
-                    {g.emoji}
+            {geniuses.map((g) => {
+              const { Icon, gradientClass } = getGeniusVisual(g.slug, g.category);
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => handleChoose(g.slug)}
+                  disabled={picking !== null}
+                  className="text-left rounded-xl border p-4 transition-all hover:border-primary hover:shadow-soft disabled:opacity-50"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br ${gradientClass} shadow-soft`}>
+                      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="font-semibold">{g.name}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{g.short_description}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold">{g.name}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{g.short_description}</div>
-                  </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>
