@@ -46,26 +46,34 @@ function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold">Тарифы</h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            От точечной помощи до доступа ко всей экосистеме Гениев.
-          </p>
-        </div>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-mesh -z-10" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-96 w-[40rem] rounded-full bg-primary/15 blur-3xl -z-10" />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {data.plans.map((p) => (
-            <PlanCard
-              key={p.id}
-              name={p.name}
-              price={p.price}
-              description={p.description ?? ""}
-              features={FEATURES[p.slug] ?? []}
-              highlight={p.slug === "family"}
-              onSelect={() => handleSelect(p.slug)}
-            />
-          ))}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+          <div className="text-center">
+            <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
+              Тарифы
+            </span>
+            <h1 className="mt-5 text-4xl md:text-5xl font-bold tracking-tight">Выберите свой формат</h1>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              От точечной помощи до доступа ко всей экосистеме Гениев.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {data.plans.map((p) => (
+              <PlanCard
+                key={p.id}
+                name={p.name}
+                price={p.price}
+                description={p.description ?? ""}
+                features={FEATURES[p.slug] ?? []}
+                highlight={p.slug === "family"}
+                onSelect={() => handleSelect(p.slug)}
+              />
+            ))}
+          </div>
         </div>
       </section>
       <Footer />

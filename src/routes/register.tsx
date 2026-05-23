@@ -52,14 +52,17 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-gradient-soft px-4 py-12">
-      <div className="w-full max-w-md rounded-3xl border bg-card p-8 shadow-elegant">
+    <div className="relative min-h-screen grid place-items-center bg-gradient-mesh px-4 py-12 overflow-hidden">
+      <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl -z-10" />
+      <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-primary-glow/20 blur-3xl -z-10" />
+
+      <div className="w-full max-w-md glass-panel-strong rounded-3xl p-8 shadow-elegant">
         <Link to="/" className="flex items-center justify-center gap-2 mb-6">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-hero text-primary-foreground">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft ring-1 ring-white/50">
             <Sparkles className="h-5 w-5" />
           </span>
         </Link>
-        <h1 className="text-2xl font-bold text-center">Создайте аккаунт</h1>
+        <h1 className="text-2xl font-bold text-center tracking-tight">Создайте аккаунт</h1>
         <p className="text-sm text-muted-foreground text-center mt-1">Начните учиться с Гением сегодня</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -75,10 +78,10 @@ function RegisterPage() {
             <Label htmlFor="password">Пароль</Label>
             <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5" />
           </div>
-          <Button type="submit" disabled={loading} className="w-full bg-gradient-hero text-primary-foreground shadow-soft">
+          <Button type="submit" disabled={loading} className="w-full bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">
             {loading ? "Создаём..." : "Создать аккаунт"}
           </Button>
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center leading-relaxed">
             Создавая аккаунт, вы соглашаетесь с{" "}
             <Link to="/privacy" className="text-primary hover:underline">Политикой конфиденциальности</Link>
             {" "}и{" "}
