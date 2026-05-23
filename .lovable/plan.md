@@ -1,41 +1,54 @@
-## План: Политика конфиденциальности и Публичная оферта
+## Цель
+Заменить emoji в карточках Гениев на профессиональные lucide-react иконки и поднять премиальность визуала. Только UI каталога (landing) и dashboard-карточек. Бизнес-логика, auth, schema, routing — не трогаем (emoji-колонка в БД остаётся, мы её просто не используем в UI).
 
-Добавить две правовые страницы и ссылки на них в футер.
+## Что меняем
 
-### Новые маршруты
+### 1. Новый файл `src/lib/genius-icons.tsx`
+Маппинг `slug → { Icon, accent }`, чтобы и landing, и dashboard брали иконки из одного источника.
 
-1. **`src/routes/privacy.tsx`** → `/privacy`
-   - Заголовок «Политика конфиденциальности»
-   - Разделы: общие положения, какие данные собираем (email, имя, данные подписки), цели обработки, хранение и защита (Lovable Cloud / Supabase), права пользователя, cookies, контакты для запросов (hello@academy-genius.ru)
-   - Дата последнего обновления
-   - Свой `head()` с уникальными `title`, `description`, `og:title`, `og:description`
+- `matgeniy` → Calculator
+- `rusgeniy` → PenTool
+- `anglogeniy` → Languages
+- `geogeniy` → Globe2
+- `biogeniy` → Leaf (Dna запасной)
+- `istogeniy` → Landmark
+- `himgeniy` → FlaskConical
+- `fizgeniy` → Atom
+- `obshestvogeniy` → Scale
+- `litgeniy` → BookText
+- `infogeniy` → Code2
+- `astrogeniy` → Rocket
+- `doshkogeniy` → Blocks (toy-brick эквивалент)
+- `logogeniy` → Mic
+- `bloggeniy` → Megaphone
+- `fingeniy` → Wallet
+- `biznesgeniy` → Briefcase
 
-2. **`src/routes/offer.tsx`** → `/offer`
-   - Заголовок «Публичная оферта»
-   - Разделы: предмет договора (доступ к AI-наставникам), тарифы и порядок оплаты (с отсылкой к `/pricing`), момент акцепта (оплата тарифа), срок действия подписки, права и обязанности сторон, возврат средств, ответственность, форс-мажор, реквизиты/контакты
-   - Дата вступления в силу
-   - Свой `head()` с уникальной мета-информацией
+Палитра акцентов по категориям (token-friendly Tailwind утилитарные классы для градиента иконок):
+- `school` → violet → blue (`from-violet-500 to-blue-500`)
+- `kids` → pink → orange (`from-pink-500 to-orange-400`)
+- `adult` → emerald → slate (`from-emerald-500 to-slate-600`)
 
-Обе страницы:
-- Используют `Navbar` и `Footer`
-- Контент в `prose`-стиле (читаемая ширина ~`max-w-3xl`, заголовки h2/h3, списки)
-- Семантические токены из `src/styles.css` (без хардкода цветов)
-- Текст на русском, нейтральный шаблонный, без юридических гарантий — пометка «образец, требует проверки юристом»
+Хелпер `getGeniusVisual(slug, category)` возвращает `{ Icon, gradientClass }` с fallback на `Sparkles` + категорийный градиент.
 
-### Обновления существующих файлов
+### 2. `src/components/GeniusCard.tsx` — редизайн
+- Убрать `genius.emoji`, рендерить `<Icon className="h-6 w-6 text-white" />` внутри rounded gradient контейнера `h-12 w-12 rounded-xl bg-gradient-to-br ... shadow-soft`.
+- Locked-состояние: тот же контейнер, но `bg-muted` + `text-muted-foreground`, иконка `Lock` поверх (полупрозрачный overlay) или замена на Lock-иконку — сохраним текущий UX (иконка Гения видна, бейдж "Недоступно" справа).
+- Премиальность: `rounded-2xl`, увеличить padding до `p-6`, hover — `hover:-translate-y-1 hover:shadow-elegant transition-all duration-300`, тонкая граница `border-border/60`, заголовок `text-base font-semibold tracking-tight`, описание `text-sm leading-relaxed text-muted-foreground`, чище spacing (`mt-5` между блоками).
+- Кнопка "Открыть чат" — сохранить existing variant.
 
-3. **`src/components/Footer.tsx`**
-   - Добавить колонку «Правовая информация» (или добавить в существующую «Платформа») со ссылками `Link to="/privacy"` и `Link to="/offer"`
+### 3. `src/routes/index.tsx` — каталог на landing
+Заменить инлайн-рендер карточки в секции "Каталог Гениев": вместо `{g.emoji}` использовать `getGeniusVisual(g.slug, g.category)` и тот же gradient container. Сохранить grid и текущую структуру секции.
 
-4. **`src/routes/register.tsx`**
-   - Под кнопкой «Создать аккаунт» добавить мелкий текст: «Создавая аккаунт, вы соглашаетесь с [Политикой конфиденциальности](/privacy) и [Публичной офертой](/offer)»
+### 4. `src/routes/_authenticated/dashboard.tsx` — селектор "Один Гений"
+В `<Dialog>` пикере заменить `{g.emoji}` на ту же иконку в маленьком gradient containere (`h-10 w-10`).
 
-5. **`src/routes/_authenticated/checkout.tsx`**
-   - Рядом с кнопкой оплаты — короткая фраза «Нажимая «Оплатить», вы принимаете условия [оферты](/offer)»
+## Что НЕ трогаем
+- `src/lib/access.ts` (тип `Genius.emoji` остаётся — поле в БД не убираем).
+- migrations, RLS, server functions, routing, auth.
+- `src/styles.css` — текущих токенов (`bg-gradient-soft`, `shadow-soft`, `shadow-elegant`) хватает; добавлять ничего не нужно.
 
-### Технические детали
-
-- Файлы кладутся в `src/routes/` по flat-конвенции TanStack Start
-- `src/routeTree.gen.ts` обновится автоматически Vite-плагином — вручную не трогаем
-- Никаких изменений БД, серверных функций, аутентификации
-- Никаких новых зависимостей
+## Технические детали
+- Все иконки из `lucide-react` (уже в зависимостях).
+- Категорийный градиент — Tailwind utility-классы, без новых CSS-переменных, чтобы не раздувать дизайн-систему ради 3 акцентов.
+- Хелпер возвращает строку класса, а не объект стилей, чтобы Tailwind JIT её увидел (статические литералы в карте).
