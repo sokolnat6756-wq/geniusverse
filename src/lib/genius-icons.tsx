@@ -16,6 +16,7 @@ import {
   Megaphone,
   Wallet,
   Briefcase,
+  Radio,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
