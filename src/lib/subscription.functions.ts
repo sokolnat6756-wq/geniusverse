@@ -108,13 +108,22 @@ export const selectOneGenius = createServerFn({ method: "POST" })
       .select("slug,category");
     if (gErr) throw new Error(gErr.message);
 
-    const allowedSlugs = geniusSlugsForPlan(
-      sub.plan_slug as PlanSlug,
-      geniuses ?? [],
-      data.geniusSlug,
-    );
-    if (!allowedSlugs.includes(data.geniusSlug)) {
-      throw new Error("Этот Гений недоступен на вашем тарифе");
+    // Verify the requested slug actually exists
+    if (!(geniuses ?? []).some((g) => g.slug === data.geniusSlug)) {
+      throw new Error("Гений не найден");
+    }
+
+    if (sub.plan_slug === "one_genius") {
+      // any genius is selectable, plan grants access to exactly one
+    } else {
+      const allowedSlugs = geniusSlugsForPlan(
+        sub.plan_slug as PlanSlug,
+        geniuses ?? [],
+        null,
+      );
+      if (!allowedSlugs.includes(data.geniusSlug)) {
+        throw new Error("Этот Гений недоступен на вашем тарифе");
+      }
     }
 
     // deactivate previous selection
