@@ -39,6 +39,7 @@ const ICON_BY_SLUG: Record<string, LucideIcon> = {
   bloggeniy: Megaphone,
   fingeniy: Wallet,
   biznesgeniy: Briefcase,
+  maxgeniy: Radio,
 };
 
 // Single unified gradient for ALL Genius icons across the platform.
