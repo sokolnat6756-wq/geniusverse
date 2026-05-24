@@ -83,6 +83,9 @@ export function Navbar() {
             {session ? (
               <>
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
+                {isAdmin && (
+                  <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка</Link>
+                )}
                 <Button variant="outline" onClick={() => { setOpen(false); handleLogout(); }}>Выйти</Button>
               </>
             ) : (
