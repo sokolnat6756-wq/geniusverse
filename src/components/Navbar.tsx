@@ -47,6 +47,11 @@ export function Navbar() {
               <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
                 Кабинет
               </Link>
+              {isAdmin && (
+                <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Админка
+                </Link>
+              )}
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
             </>
           ) : (
