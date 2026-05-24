@@ -1,14 +1,24 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Sparkles, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { getIsAdmin } from "@/lib/admin.functions";
 
 export function Navbar() {
   const { session, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const isAdminFn = useServerFn(getIsAdmin);
+  const { data: adminData } = useQuery({
+    queryKey: ["is-admin", session?.user?.id],
+    queryFn: () => isAdminFn(),
+    enabled: !!session,
+  });
+  const isAdmin = !!adminData?.isAdmin;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -37,6 +47,11 @@ export function Navbar() {
               <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
                 Кабинет
               </Link>
+              {isAdmin && (
+                <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Админка
+                </Link>
+              )}
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
             </>
           ) : (
@@ -68,6 +83,9 @@ export function Navbar() {
             {session ? (
               <>
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
+                {isAdmin && (
+                  <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка</Link>
+                )}
                 <Button variant="outline" onClick={() => { setOpen(false); handleLogout(); }}>Выйти</Button>
               </>
             ) : (
