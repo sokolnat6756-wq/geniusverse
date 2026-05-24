@@ -52,3 +52,29 @@ export const CATEGORY_LABELS: Record<string, string> = {
   kids: "Дети",
   adult: "Взрослым",
 };
+
+export function geniusSlugsForPlan(
+  plan: PlanSlug,
+  allGeniuses: Pick<Genius, "slug" | "category">[],
+  oneGeniusSlug?: string | null,
+): string[] {
+  switch (plan) {
+    case "full":
+      return allGeniuses.map((g) => g.slug);
+    case "school":
+      return allGeniuses.filter((g) => g.category === "school").map((g) => g.slug);
+    case "family":
+      return allGeniuses
+        .filter(
+          (g) =>
+            g.category === "school" ||
+            g.category === "kids" ||
+            (g.category === "adult" && FAMILY_ADULT_SLUGS.has(g.slug)),
+        )
+        .map((g) => g.slug);
+    case "one_genius":
+      return oneGeniusSlug ? [oneGeniusSlug] : [];
+    default:
+      return [];
+  }
+}

@@ -1,44 +1,71 @@
-# Админка для управления Гениями
+# Админка пользователей `/admin/users`
 
 ## 1. База данных (одна миграция)
 
-**Роли:**
-- `CREATE TYPE public.app_role AS ENUM ('admin', 'user');`
-- Таблица `public.user_roles (id, user_id uuid, role app_role, unique(user_id, role))` с RLS.
-- Security definer функция `public.has_role(_user_id uuid, _role app_role) returns boolean`.
-- RLS на `user_roles`: пользователь видит свои роли; только админ может INSERT/UPDATE/DELETE через `has_role(auth.uid(), 'admin')`.
+**RLS-доступ админа к чужим данным** (сейчас все таблицы скоупятся через `auth.uid()`):
+- `profiles`: добавить SELECT-политику `has_role(auth.uid(), 'admin')`.
+- `subscriptions`: добавить SELECT / INSERT / UPDATE политики для админа через `has_role`.
+- `user_genius_access`: добавить SELECT / INSERT / UPDATE / DELETE политики для админа.
 
-**Доступ админа к `geniuses`:**
-- Добавить RLS политику UPDATE на `public.geniuses`: `USING (public.has_role(auth.uid(), 'admin'))`.
-- SELECT уже публичный — оставить. INSERT/DELETE не нужны (редактируем только существующие записи).
+Существующие user-policies (`auth.uid() = user_id`) остаются — обычный пользователь видит только своё. Админ получает параллельный набор политик. RLS остаётся включён.
 
-После миграции — выполнить вручную через SQL: `INSERT INTO user_roles (user_id, role) VALUES ('<ваш-uuid>', 'admin');` (инструкция будет в чате).
+## 2. Серверная логика (`src/lib/admin.functions.ts`)
 
-## 2. Серверная логика (`createServerFn`)
+Добавить (рядом с уже существующими `getIsAdmin / listAllGeniuses / updateGenius`):
 
-`src/lib/admin.functions.ts`:
-- `getIsAdmin()` — middleware `requireSupabaseAuth`, возвращает `{ isAdmin: boolean }` через запрос к `user_roles`.
-- `updateGenius({ id, name, short_description, emoji, chatgpt_url })` — middleware `requireSupabaseAuth`, проверка admin-роли на сервере, Zod-валидация (длины, URL-формат для `chatgpt_url`, разрешён null/пустая строка → null), затем UPDATE через RLS-клиент. Если не админ — `throw new Error('Forbidden')`.
+- `listAllUsers()` — admin-only через `assertAdmin`. Через `supabaseAdmin` собирает:
+  - `auth.admin.listUsers()` → email, created_at
+  - все активные `subscriptions` (plan_slug, status)
+  - все активные `user_genius_access` (genius_slug)
+  - агрегирует в массив `{ user_id, email, created_at, plan_slug, status, geniuses_count, one_genius_slug }`
+- `grantAccess({ userId, plan, geniusSlug? })` — admin-only, Zod:
+  - `plan ∈ {'one_genius','school','family','full'}`
+  - если `one_genius` — `geniusSlug` обязателен и должен существовать в `geniuses`
+  - деактивирует прошлые `subscriptions` пользователя (`status='cancelled'`), вставляет новую `active`
+  - очищает `user_genius_access` пользователя, затем заполняет в соответствии с планом:
+    - `one_genius` → одна запись с выбранным slug
+    - `school` → все Гении категории `school`
+    - `family` → `school + kids + ['fingeniy','bloggeniy','biznesgeniy']`
+    - `full` → все Гении
+- `revokeAccess({ userId })` — admin-only:
+  - все активные подписки → `status='cancelled'`
+  - все `user_genius_access` пользователя → `access_status='cancelled'`
 
-## 3. Роут `/_authenticated/admin/geniuses`
+Логика составления списка Гениев по плану повторяет `isGeniusUnlocked` из `src/lib/access.ts` — вынесу хелпер `geniusSlugsForPlan(plan, allGeniuses, oneSlug?)` туда же, чтобы клиент и сервер использовали одно правило.
 
-`src/routes/_authenticated/admin/geniuses.tsx`:
-- `beforeLoad`: `getIsAdmin()`; если `!isAdmin` → `throw redirect({ to: '/dashboard' })`.
-- Loader: грузит список всех гениев через существующий публичный server fn (или новый admin-only с полным селектом).
-- Компонент: таблица из shadcn `Table` со строками по каждому Гению. Поля редактируемые inline: `emoji` (короткий input), `name` (input), `short_description` (textarea), `chatgpt_url` (input). Кнопка «Сохранить» на каждой строке, индикатор loading, toast об успехе/ошибке через `sonner`. React Query для инвалидации.
-- Дизайн: те же premium-glass токены, что и dashboard — никаких новых стилей.
+## 3. Роут `/_authenticated/admin/users`
+
+`src/routes/_authenticated/admin/users.tsx`:
+- `beforeLoad`: `getIsAdmin()` → если не админ → `redirect('/dashboard')`.
+- React Query загружает `listAllUsers` + `listAllGeniuses` (для дропдауна one_genius).
+- Таблица (shadcn `Table`) в том же premium-glass стиле, что и админка Гениев. Колонки: Email · Дата регистрации · Текущий план · Статус · Кол-во Гениев · Действия.
+- Действия в строке:
+  - `Select` плана (`no_access / one_genius / school / family / full`)
+  - условный `Select` Гения (виден только если выбран `one_genius`)
+  - кнопка **«Открыть доступ»** → `grantAccess` (для `no_access` — фактически revoke)
+  - кнопка **«Закрыть доступ»** → `revokeAccess`
+- Loading state на кнопках, `sonner` toast, `queryClient.invalidateQueries` после мутаций.
 
 ## 4. Навигация
 
-В `src/components/Navbar.tsx` — условный пункт «Админка» (виден только если `getIsAdmin()` вернул true; кешируется через React Query).
+В `Navbar.tsx` рядом с уже существующей «Админка» (которая ведёт на Гениев) — добавить второй пункт «Пользователи» (виден только админу). Дизайн без изменений.
 
 ## 5. Не трогаем
 
-Auth, существующие RLS на других таблицах, mock checkout, доступ Гениев, дизайн-токены, ChatGPT-ссылки на dashboard.
+- Админку Гениев `/admin/geniuses`
+- Landing/dashboard/checkout/pricing
+- Auth, существующие user-RLS политики
+- Дизайн-токены
 
 ## Технические заметки
 
-- Все мутации проходят дважды через защиту: RLS политика на `geniuses` UPDATE + явная проверка `has_role` в `updateGenius` handler.
-- `chatgpt_url` валидируется как `z.string().url().nullable()` (пустая строка → `null`).
-- Список гениев в админке грузится через `supabaseAdmin` для надёжности (или через тот же публичный select — данные совпадают).
-- TypeScript-типы `user_roles` подтянутся автоматически после миграции.
+- Все мутации защищены дважды: `assertAdmin` в handler + RLS на таблицах.
+- `no_access` в селекте маппится на `revokeAccess` — отдельный план не создаём.
+- Dashboard у пользователя обновляется при следующем заходе/refetch — серверных пушей не делаем.
+- TS-типы `user_roles` уже подтянуты предыдущей миграцией; новая миграция меняет только политики, типы не изменятся.
+- Для `auth.admin.listUsers()` используется `supabaseAdmin` (service role) — только на сервере.
+
+## Открытые вопросы (предлагаю решить дефолтами без отдельного раунда вопросов)
+
+- **Пагинация**: пока без пагинации (project small-scale). При >100 пользователей добавим `auth.admin.listUsers({ page, perPage })`.
+- **Поиск по email**: не добавляю в первой версии — можно добавить позже одним инпутом с client-side фильтром.

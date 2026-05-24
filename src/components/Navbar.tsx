@@ -48,9 +48,14 @@ export function Navbar() {
                 Кабинет
               </Link>
               {isAdmin && (
-                <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  Админка
-                </Link>
+                <>
+                  <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    Гении
+                  </Link>
+                  <Link to="/admin/users" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    Пользователи
+                  </Link>
+                </>
               )}
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
             </>
@@ -84,7 +89,10 @@ export function Navbar() {
               <>
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
                 {isAdmin && (
-                  <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка</Link>
+                  <>
+                    <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка · Гении</Link>
+                    <Link to="/admin/users" onClick={() => setOpen(false)} className="py-2">Админка · Пользователи</Link>
+                  </>
                 )}
                 <Button variant="outline" onClick={() => { setOpen(false); handleLogout(); }}>Выйти</Button>
               </>
