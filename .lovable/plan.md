@@ -1,46 +1,44 @@
-# Pivot to External ChatGPT Access Hub
+# Админка для управления Гениями
 
-The dashboard becomes a closed members area that hands out links to Custom GPTs. No internal AI chat for now.
+## 1. База данных (одна миграция)
 
-## 1. Database
+**Роли:**
+- `CREATE TYPE public.app_role AS ENUM ('admin', 'user');`
+- Таблица `public.user_roles (id, user_id uuid, role app_role, unique(user_id, role))` с RLS.
+- Security definer функция `public.has_role(_user_id uuid, _role app_role) returns boolean`.
+- RLS на `user_roles`: пользователь видит свои роли; только админ может INSERT/UPDATE/DELETE через `has_role(auth.uid(), 'admin')`.
 
-Migration:
-- `ALTER TABLE public.geniuses ADD COLUMN chatgpt_url text;`
-- Seed all 17 existing geniuses with placeholder: `UPDATE public.geniuses SET chatgpt_url = 'https://chat.openai.com/g/g-placeholder' WHERE chatgpt_url IS NULL;`
+**Доступ админа к `geniuses`:**
+- Добавить RLS политику UPDATE на `public.geniuses`: `USING (public.has_role(auth.uid(), 'admin'))`.
+- SELECT уже публичный — оставить. INSERT/DELETE не нужны (редактируем только существующие записи).
 
-RLS unchanged (public read already allows anon to see the column). No schema changes elsewhere.
+После миграции — выполнить вручную через SQL: `INSERT INTO user_roles (user_id, role) VALUES ('<ваш-uuid>', 'admin');` (инструкция будет в чате).
 
-## 2. Types & access layer
+## 2. Серверная логика (`createServerFn`)
 
-- `src/lib/access.ts` — add `chatgpt_url: string | null` to the `Genius` interface.
-- `src/integrations/supabase/types.ts` regenerates automatically after the migration.
-- `src/lib/public-data.functions.ts` — include `chatgpt_url` in the select (verify; likely `select('*')`, no change needed).
+`src/lib/admin.functions.ts`:
+- `getIsAdmin()` — middleware `requireSupabaseAuth`, возвращает `{ isAdmin: boolean }` через запрос к `user_roles`.
+- `updateGenius({ id, name, short_description, emoji, chatgpt_url })` — middleware `requireSupabaseAuth`, проверка admin-роли на сервере, Zod-валидация (длины, URL-формат для `chatgpt_url`, разрешён null/пустая строка → null), затем UPDATE через RLS-клиент. Если не админ — `throw new Error('Forbidden')`.
 
-## 3. GeniusCard
+## 3. Роут `/_authenticated/admin/geniuses`
 
-`src/components/GeniusCard.tsx`:
-- When `unlocked`: replace the `<Link to="/chat-placeholder">` block with an `<a href={genius.chatgpt_url ?? '#'} target="_blank" rel="noopener noreferrer">` wrapping the same gradient button. Button label: **«Открыть в ChatGPT»** with an external-link icon (`ExternalLink` from lucide). If `chatgpt_url` is null, disable the button with tooltip "Ссылка скоро будет".
-- Locked state unchanged: «Открыть доступ» → `onUnlockClick`.
+`src/routes/_authenticated/admin/geniuses.tsx`:
+- `beforeLoad`: `getIsAdmin()`; если `!isAdmin` → `throw redirect({ to: '/dashboard' })`.
+- Loader: грузит список всех гениев через существующий публичный server fn (или новый admin-only с полным селектом).
+- Компонент: таблица из shadcn `Table` со строками по каждому Гению. Поля редактируемые inline: `emoji` (короткий input), `name` (input), `short_description` (textarea), `chatgpt_url` (input). Кнопка «Сохранить» на каждой строке, индикатор loading, toast об успехе/ошибке через `sonner`. React Query для инвалидации.
+- Дизайн: те же premium-glass токены, что и dashboard — никаких новых стилей.
 
-No design/layout/typography changes — same button styling, just different content + anchor.
+## 4. Навигация
 
-## 4. Remove internal chat route
+В `src/components/Navbar.tsx` — условный пункт «Админка» (виден только если `getIsAdmin()` вернул true; кешируется через React Query).
 
-- Delete `src/routes/_authenticated/chat-placeholder.tsx`. TanStack Router regenerates the route tree.
-- Grep for any remaining `to="/chat-placeholder"` references and remove (should only be GeniusCard after the edit).
+## 5. Не трогаем
 
-## 5. Dashboard
+Auth, существующие RLS на других таблицах, mock checkout, доступ Гениев, дизайн-токены, ChatGPT-ссылки на dashboard.
 
-`src/routes/_authenticated/dashboard.tsx`:
-- Picker dialog: after `selectOneGenius` succeeds, no navigation change needed (it just refreshes dashboard).
-- No other changes — dashboard already renders `GeniusCard` which now opens external links.
+## Технические заметки
 
-## 6. Untouched
-
-- Auth, RLS, plans, mock checkout, `isGeniusUnlocked` logic, pricing page, landing page, glassmorphism design, icons, gradients.
-
-## Technical notes
-
-- Anchor must use `target="_blank" rel="noopener noreferrer"` for security.
-- `chatgpt_url` is nullable so future per-genius URLs can be filled in via SQL without code changes.
-- Later swap to internal chat by reverting GeniusCard's button to a `<Link>` — single-file change.
+- Все мутации проходят дважды через защиту: RLS политика на `geniuses` UPDATE + явная проверка `has_role` в `updateGenius` handler.
+- `chatgpt_url` валидируется как `z.string().url().nullable()` (пустая строка → `null`).
+- Список гениев в админке грузится через `supabaseAdmin` для надёжности (или через тот же публичный select — данные совпадают).
+- TypeScript-типы `user_roles` подтянутся автоматически после миграции.
