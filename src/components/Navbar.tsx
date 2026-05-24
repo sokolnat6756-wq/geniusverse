@@ -89,7 +89,10 @@ export function Navbar() {
               <>
                 <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
                 {isAdmin && (
-                  <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка</Link>
+                  <>
+                    <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка · Гении</Link>
+                    <Link to="/admin/users" onClick={() => setOpen(false)} className="py-2">Админка · Пользователи</Link>
+                  </>
                 )}
                 <Button variant="outline" onClick={() => { setOpen(false); handleLogout(); }}>Выйти</Button>
               </>
