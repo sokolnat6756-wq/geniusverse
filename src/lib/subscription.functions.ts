@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { geniusSlugsForPlan, type PlanSlug } from "@/lib/access";
+import { geniusSlugsForPlan, isGeniusUnlocked, type PlanSlug } from "@/lib/access";
 
 export const getDashboardData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -19,7 +19,12 @@ export const getDashboardData = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-      supabase.from("geniuses").select("*").order("category").order("name"),
+      // Public catalog fields only — no chatgpt_url leak
+      supabase
+        .from("geniuses")
+        .select("id,name,slug,emoji,category,short_description")
+        .order("category")
+        .order("name"),
       supabase
         .from("user_genius_access")
         .select("*")
@@ -29,11 +34,34 @@ export const getDashboardData = createServerFn({ method: "GET" })
         .maybeSingle(),
     ]);
 
+    const planSlug = subRes.data?.plan_slug ?? null;
+    const selectedOneGenius = accessRes.data?.genius_slug ?? null;
+    const baseGeniuses = geniusesRes.data ?? [];
+
+    // Fetch chatgpt_url ONLY for geniuses the user is entitled to
+    const unlockedSlugs = baseGeniuses
+      .filter((g) => isGeniusUnlocked(g, planSlug, selectedOneGenius))
+      .map((g) => g.slug);
+
+    let urlBySlug = new Map<string, string | null>();
+    if (unlockedSlugs.length > 0) {
+      const { data: urls } = await supabaseAdmin
+        .from("geniuses")
+        .select("slug,chatgpt_url")
+        .in("slug", unlockedSlugs);
+      urlBySlug = new Map((urls ?? []).map((u) => [u.slug, u.chatgpt_url]));
+    }
+
+    const geniuses = baseGeniuses.map((g) => ({
+      ...g,
+      chatgpt_url: urlBySlug.get(g.slug) ?? null,
+    }));
+
     return {
       profile: profileRes.data,
       subscription: subRes.data,
-      geniuses: geniusesRes.data ?? [],
-      selectedOneGenius: accessRes.data?.genius_slug ?? null,
+      geniuses,
+      selectedOneGenius,
     };
   });
 
