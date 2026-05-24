@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { geniusSlugsForPlan, type PlanSlug } from "@/lib/access";
 
 export const getDashboardData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -58,16 +60,16 @@ export const activateMockSubscription = createServerFn({ method: "POST" })
     z.object({ planSlug: z.enum(ALLOWED_PLANS) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
 
-    // Cancel any existing active subscriptions
-    await supabase
+    // Cancel any existing active subscriptions (admin client, scoped to this user)
+    await supabaseAdmin
       .from("subscriptions")
       .update({ status: "cancelled" })
       .eq("user_id", userId)
       .eq("status", "active");
 
-    const { data: sub, error } = await supabase
+    const { data: sub, error } = await supabaseAdmin
       .from("subscriptions")
       .insert({
         user_id: userId,
@@ -87,15 +89,41 @@ export const selectOneGenius = createServerFn({ method: "POST" })
     z.object({ geniusSlug: z.string().min(1).max(64) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+
+    // Verify the user has an active subscription that entitles them to this genius
+    const { data: sub, error: subErr } = await supabaseAdmin
+      .from("subscriptions")
+      .select("plan_slug")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (subErr) throw new Error(subErr.message);
+    if (!sub) throw new Error("Нет активной подписки");
+
+    const { data: geniuses, error: gErr } = await supabaseAdmin
+      .from("geniuses")
+      .select("slug,category");
+    if (gErr) throw new Error(gErr.message);
+
+    const allowedSlugs = geniusSlugsForPlan(
+      sub.plan_slug as PlanSlug,
+      geniuses ?? [],
+      data.geniusSlug,
+    );
+    if (!allowedSlugs.includes(data.geniusSlug)) {
+      throw new Error("Этот Гений недоступен на вашем тарифе");
+    }
 
     // deactivate previous selection
-    await supabase
+    await supabaseAdmin
       .from("user_genius_access")
       .update({ access_status: "cancelled" })
       .eq("user_id", userId);
 
-    const { error } = await supabase.from("user_genius_access").upsert(
+    const { error } = await supabaseAdmin.from("user_genius_access").upsert(
       {
         user_id: userId,
         genius_slug: data.geniusSlug,
