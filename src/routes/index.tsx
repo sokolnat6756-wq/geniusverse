@@ -99,7 +99,7 @@ function LandingPage() {
       <section className="relative bg-gradient-mesh py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight">Каталог Гениев</h2>
-          <p className="mt-3 text-center text-muted-foreground">17 наставников по самым важным направлениям</p>
+          <p className="mt-3 text-center text-muted-foreground">18 наставников по самым важным направлениям</p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {geniuses.map((g) => {
