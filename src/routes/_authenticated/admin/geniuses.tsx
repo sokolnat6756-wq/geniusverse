@@ -151,17 +151,7 @@ function AdminGeniusesPage() {
                   await deleteFn({ data: { id: g.id } });
                   await invalidate();
                 }}
-                onUpload={async (file) => {
-                  const dataBase64 = await fileToBase64(file);
-                  const res = await uploadFn({
-                    data: {
-                      fileName: file.name,
-                      contentType: file.type || "image/png",
-                      dataBase64,
-                    },
-                  });
-                  return res.url;
-                }}
+                onUpload={uploadImageToStorage}
               />
             ))}
           </div>
