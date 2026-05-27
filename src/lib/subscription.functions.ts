@@ -68,6 +68,7 @@ export const getDashboardData = createServerFn({ method: "GET" })
     return {
       profile: profileRes.data,
       subscription: subRes.data,
+      pendingSubscription: pendingRes.data,
       geniuses,
       selectedOneGenius,
     };
