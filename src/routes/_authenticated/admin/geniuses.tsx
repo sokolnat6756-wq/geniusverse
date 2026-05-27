@@ -95,7 +95,7 @@ function AdminGeniusesPage() {
   const updateFn = useServerFn(updateGenius);
   const createFn = useServerFn(createGenius);
   const deleteFn = useServerFn(deleteGenius);
-  const uploadFn = useServerFn(uploadGeniusImage);
+  // image upload happens directly to storage via uploadImageToStorage
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
