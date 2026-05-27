@@ -34,8 +34,26 @@ import {
   updateGenius,
   createGenius,
   deleteGenius,
-  uploadGeniusImage,
 } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
+
+async function uploadImageToStorage(file: File): Promise<string> {
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Файл слишком большой (макс. 10 МБ)");
+  }
+  if (!/^image\//.test(file.type)) {
+    throw new Error("Поддерживаются только изображения");
+  }
+  const ext = (file.name.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "bin";
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("genius-images").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from("genius-images").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 export const Route = createFileRoute("/_authenticated/admin/geniuses")({
   beforeLoad: async () => {
@@ -61,23 +79,15 @@ type Row = {
   image_url: string | null;
 };
 
-async function fileToBase64(file: File): Promise<string> {
-  const buf = await file.arrayBuffer();
-  let bin = "";
-  const bytes = new Uint8Array(buf);
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-  }
-  return btoa(bin);
-}
+
+
 
 function AdminGeniusesPage() {
   const listFn = useServerFn(listAllGeniuses);
   const updateFn = useServerFn(updateGenius);
   const createFn = useServerFn(createGenius);
   const deleteFn = useServerFn(deleteGenius);
-  const uploadFn = useServerFn(uploadGeniusImage);
+  // image upload happens directly to storage via uploadImageToStorage
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -106,17 +116,7 @@ function AdminGeniusesPage() {
           </div>
           <CreateGeniusDialog
             categories={categories}
-            onUpload={async (file) => {
-              const dataBase64 = await fileToBase64(file);
-              const res = await uploadFn({
-                data: {
-                  fileName: file.name,
-                  contentType: file.type || "image/png",
-                  dataBase64,
-                },
-              });
-              return res.url;
-            }}
+            onUpload={uploadImageToStorage}
             onCreate={async (payload) => {
               await createFn({ data: payload });
               invalidate();
@@ -143,17 +143,7 @@ function AdminGeniusesPage() {
                   await deleteFn({ data: { id: g.id } });
                   await invalidate();
                 }}
-                onUpload={async (file) => {
-                  const dataBase64 = await fileToBase64(file);
-                  const res = await uploadFn({
-                    data: {
-                      fileName: file.name,
-                      contentType: file.type || "image/png",
-                      dataBase64,
-                    },
-                  });
-                  return res.url;
-                }}
+                onUpload={uploadImageToStorage}
               />
             ))}
           </div>
