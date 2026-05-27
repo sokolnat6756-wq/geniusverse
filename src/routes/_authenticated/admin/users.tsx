@@ -195,9 +195,13 @@ function UserActionsRow({
           : "—"}
       </TableCell>
       <TableCell className="text-sm">
-        {user.status === "active" ? (
+        {hasActive ? (
           <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
             активна
+          </span>
+        ) : hasPending ? (
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+            заявка: {PLAN_LABELS[user.pending_plan_slug!] ?? user.pending_plan_slug}
           </span>
         ) : (
           <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
