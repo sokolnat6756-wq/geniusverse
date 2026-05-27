@@ -282,11 +282,13 @@ function LandingPage() {
                   </p>
                 </div>
                 <div className="mt-8">
-                  <Button asChild size="lg" className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95">
-                    <Link to="/pricing">
-                      Выбрать своего Гения
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95"
+                    onClick={() => scrollTo("catalog")}
+                  >
+                    Выбрать своего Гения
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
