@@ -40,22 +40,40 @@ export const listAllGeniuses = createServerFn({ method: "GET" })
     return { geniuses: data ?? [] };
   });
 
+const slugSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z0-9_-]+$/, "Slug: только a-z, 0-9, _ и -");
+
+const urlSchema = z
+  .string()
+  .trim()
+  .max(1000)
+  .transform((v) => (v === "" ? null : v))
+  .nullable()
+  .refine(
+    (v) => v === null || /^https?:\/\/.+/i.test(v),
+    { message: "URL должен начинаться с http(s)://" },
+  );
+
+const geniusFields = {
+  name: z.string().trim().min(1).max(200),
+  slug: slugSchema,
+  emoji: z.string().trim().min(1).max(16),
+  category: z.string().trim().min(1).max(64),
+  short_description: z.string().trim().min(1).max(500),
+  chatgpt_url: urlSchema,
+  image_url: urlSchema,
+};
+
 const updateSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().trim().min(1).max(200),
-  emoji: z.string().trim().min(1).max(16),
-  short_description: z.string().trim().min(1).max(500),
-  chatgpt_url: z
-    .string()
-    .trim()
-    .max(500)
-    .transform((v) => (v === "" ? null : v))
-    .nullable()
-    .refine(
-      (v) => v === null || /^https?:\/\/.+/i.test(v),
-      { message: "URL должен начинаться с http(s)://" },
-    ),
+  ...geniusFields,
 });
+
+const createSchema = z.object(geniusFields);
 
 export const updateGenius = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -67,6 +85,124 @@ export const updateGenius = createServerFn({ method: "POST" })
       .from("geniuses")
       .update(patch)
       .eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const createGenius = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => createSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("geniuses").insert(data);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteGenius = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: g } = await supabaseAdmin
+      .from("geniuses")
+      .select("slug")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (g?.slug) {
+      await supabaseAdmin
+        .from("user_genius_access")
+        .update({ access_status: "cancelled" })
+        .eq("genius_slug", g.slug);
+    }
+    const { error } = await supabaseAdmin
+      .from("geniuses")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const uploadSchema = z.object({
+  fileName: z.string().min(1).max(200),
+  contentType: z.string().min(1).max(100),
+  dataBase64: z.string().min(1).max(8_000_000), // ~6MB binary
+});
+
+export const uploadGeniusImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => uploadSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (!/^image\/(png|jpe?g|webp|gif|svg\+xml)$/i.test(data.contentType)) {
+      throw new Error("Поддерживаются только изображения (png, jpg, webp, gif, svg)");
+    }
+    const ext = (data.fileName.split(".").pop() ?? "bin")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 8) || "bin";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const buffer = Buffer.from(data.dataBase64, "base64");
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("genius-images")
+      .upload(path, buffer, {
+        contentType: data.contentType,
+        upsert: false,
+      });
+    if (upErr) throw new Error(upErr.message);
+    const { data: pub } = supabaseAdmin.storage
+      .from("genius-images")
+      .getPublicUrl(path);
+    return { url: pub.publicUrl };
+  });
+
+export const listAllOrders = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+
+    const { data: subs, error } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id,user_id,plan_slug,status,created_at,expires_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+
+    const { data: usersData, error: usersErr } =
+      await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (usersErr) throw new Error(usersErr.message);
+    const emailByUser = new Map(usersData.users.map((u) => [u.id, u.email ?? ""]));
+
+    const orders = (subs ?? []).map((s) => ({
+      id: s.id,
+      user_id: s.user_id,
+      email: emailByUser.get(s.user_id) ?? "—",
+      plan_slug: s.plan_slug,
+      status: s.status,
+      created_at: s.created_at,
+      expires_at: s.expires_at,
+    }));
+    return { orders };
+  });
+
+export const updateOrderStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["active", "cancelled", "pending"]),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("subscriptions")
+      .update({ status: data.status })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
