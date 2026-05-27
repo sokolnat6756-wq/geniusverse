@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { getPublicCatalog } from "@/lib/public-data.functions";
 import { CATEGORY_LABELS } from "@/lib/access";
 import { getGeniusVisual } from "@/lib/genius-icons";
+import { useAuth } from "@/lib/auth-context";
+import { getPreselectedGenius, setPreselectedGenius } from "@/lib/preselected-genius";
+import { useState, useEffect } from "react";
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
