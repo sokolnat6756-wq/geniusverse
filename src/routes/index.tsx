@@ -146,11 +146,12 @@ function LandingPage() {
 
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="glass-panel-strong rounded-[2.5rem] shadow-elegant p-6 sm:p-8 md:p-12">
-            <div className="grid gap-10 md:grid-cols-5 md:items-start">
-              {/* Фото */}
-              <div className="md:col-span-2">
-                <div className="relative mx-auto max-w-xs md:max-w-none">
-                  <div className="aspect-[3/4] overflow-hidden rounded-3xl ring-1 ring-white/60 shadow-elegant bg-gradient-hero">
+            <div className="grid gap-8 md:grid-cols-5 md:items-stretch">
+              {/* Левая колонка */}
+              <div className="md:col-span-2 flex flex-col">
+                {/* Карточка с фото */}
+                <div className="glass-panel-strong rounded-3xl p-3 shadow-soft">
+                  <div className="aspect-[9/16] overflow-hidden rounded-2xl ring-1 ring-white/60 bg-gradient-hero">
                     {data.founder?.image_url ? (
                       <img
                         src={data.founder.image_url}
@@ -164,39 +165,37 @@ function LandingPage() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-5 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Создатель Академии
-                    </p>
-                    <p className="mt-1 text-lg font-semibold tracking-tight">Юлия Копасова</p>
-                  </div>
+                  <p className="mt-3 mb-1 text-center text-lg font-semibold tracking-tight">
+                    Юлия Копасова
+                  </p>
+                </div>
 
-                  {/* Карточка доверия */}
-                  <div className="mt-6 glass-panel-strong rounded-2xl p-5 shadow-elegant">
-                    <ul className="space-y-3.5">
-                      {[
-                        { icon: Users, title: "110 000+", text: "подписчиков" },
-                        { icon: GraduationCap, title: "800+", text: "учеников обучены онлайн" },
-                        { icon: Heart, title: "Мама 3 детей", text: "семья и забота" },
-                        { icon: Briefcase, title: "Предприниматель", text: "создатель Академии Гениев" },
-                      ].map((f) => (
-                        <li key={f.title} className="flex items-center gap-3">
-                          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft ring-1 ring-white/50">
-                            <f.icon className="h-4.5 w-4.5" strokeWidth={2} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold tracking-tight leading-tight">{f.title}</p>
-                            <p className="text-xs text-muted-foreground leading-tight mt-0.5">{f.text}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                {/* Карточка доверия */}
+                <div className="mt-6 glass-panel-strong rounded-3xl p-5 shadow-soft">
+                  <ul className="space-y-3.5">
+                    {[
+                      { icon: Users, title: "110 000+", text: "подписчиков" },
+                      { icon: GraduationCap, title: "800+", text: "учеников обучены онлайн" },
+                      { icon: Heart, title: "Мама 3 детей", text: "семья и забота" },
+                      { icon: Briefcase, title: "Предприниматель", text: "создатель Академии Гениев" },
+                    ].map((f) => (
+                      <li key={f.title} className="flex items-center gap-3">
+                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft ring-1 ring-white/50">
+                          <f.icon className="h-4 w-4" strokeWidth={2} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold tracking-tight leading-tight">{f.title}</p>
+                          <p className="text-xs text-muted-foreground leading-tight mt-0.5">{f.text}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
 
+
               {/* Текст */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-3 flex flex-col">
                 <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
                   <Heart className="h-3.5 w-3.5" /> Личное слово основателя
                 </span>
@@ -218,7 +217,7 @@ function LandingPage() {
                   </p>
                 </div>
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="mt-8 md:mt-auto md:pt-8 grid gap-3 sm:grid-cols-3">
                   {[
                     { icon: Sparkles, title: "Умные AI-помощники", text: "Поддержка в учебе, развитии и достижении целей." },
                     { icon: Target, title: "Индивидуальный подход", text: "Каждый Гений создан для конкретных задач и потребностей." },
