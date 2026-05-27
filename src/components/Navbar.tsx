@@ -96,7 +96,7 @@ export function Navbar() {
             <Link to="/pricing" onClick={() => setOpen(false)} className="py-2">Тарифы</Link>
             {session ? (
               <>
-                <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
+                {!isAdmin && <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>}
                 {isAdmin && (
                   <>
                     <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка · Гении</Link>
