@@ -199,7 +199,7 @@ function LandingPage() {
                   <Heart className="h-3.5 w-3.5" /> Личное слово основателя
                 </span>
                 <h2 className="mt-5 text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-                  Почему я создала <span className="text-gradient">Академию Гениев</span>
+                  Идея, которая стала <span className="text-gradient">Академией Гениев</span>
                 </h2>
                 <div className="mt-6 space-y-4 text-base text-muted-foreground leading-relaxed">
                   <p>
