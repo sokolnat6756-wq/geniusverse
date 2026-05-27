@@ -1,47 +1,30 @@
-## Goal
-Match the attached mockup: portrait photo card with name caption inside the same card, and the trust card moved BELOW the photo card as a separate full-width block in the left column — aligned horizontally with the row of 3 feature cards on the right.
+## Цель
+Привести секцию «Основатель» к референсу: обновить текст «800+ → 1000+ учеников», выровнять фото по высоте с правым текстовым блоком и поднять нижние карточки выше, чтобы они аккуратно совпадали с карточкой доверия слева.
 
-## Scope
-`src/routes/index.tsx`, founder section only (lines ~149–196). Admin upload, server functions, and right-column content untouched.
+## Изменения (только `src/routes/index.tsx`, секция ~149–235)
 
-## Layout target
-
+### 1. Цифра в карточке доверия
+Строка 178 — заменить:
 ```
-┌─────────────────┐   ┌─────────────────────────────────┐
-│                 │   │  Идея, которая стала ...        │
-│   PHOTO 9:16    │   │  body text paragraphs           │
-│                 │   │                                 │
-│ ─────────────── │   │                                 │
-│ Юлия Копасова   │   │                                 │
-└─────────────────┘   │                                 │
-┌─────────────────┐   ├──────┬──────┬──────┐
-│ 110 000+        │   │ card │ card │ card │
-│ 800+            │   │      │      │      │
-│ Мама 3 детей    │   │      │      │      │
-│ Предприниматель │   │      │      │      │
-└─────────────────┘   └──────┴──────┴──────┘
+{ icon: GraduationCap, title: "800+", text: "учеников обучены онлайн" }
+```
+на:
+```
+{ icon: GraduationCap, title: "1000+", text: "учеников обучены онлайн" }
 ```
 
-## Changes
+### 2. Высота фото = высоте правого текста
+Сейчас фото `aspect-[9/16]` визуально выше текстового блока. Чтобы низ карточки с фото и подписью «Юлия Копасова» совпал по уровню с концом параграфа «…новых возможностей.»:
 
-### 1. Restructure left column
-Replace the current single nested wrapper with two stacked cards, both inside `md:col-span-2`:
+- Изменить пропорцию фото: `aspect-[9/16]` → `aspect-[4/5]` (строка 154). Это даёт более компактный портрет, соответствующий высоте заголовка + 3 абзацев.
+- Подпись «Юлия Копасова» остаётся внутри карточки, без правок текста.
 
-- **Card A — Photo card** (`glass-panel-strong rounded-3xl p-3 shadow-soft`):
-  - Photo frame: keep `data.founder?.image_url` rendering and fallback. Aspect `aspect-[9/16]` (currently `3/4`), `rounded-2xl overflow-hidden ring-1 ring-white/60`.
-  - Name caption INSIDE the card, centered, `mt-3`: only `Юлия Копасова` (`text-lg font-semibold tracking-tight`). Remove "Создатель Академии" eyebrow entirely.
+### 3. Нижний ряд карточек поднимается выше
+Так как высота левой колонки уменьшается за счёт более компактного фото, карточка доверия автоматически сдвинется вверх. Чтобы ряд из трёх карточек справа совпал с карточкой доверия слева:
 
-- **Card B — Trust card** (`glass-panel-strong rounded-3xl p-5 shadow-soft mt-6`):
-  - Same 4 rows (Users / GraduationCap / Heart / Briefcase) with current copy. No content change.
+- Строка 220: убрать `md:pt-8`, оставить `mt-8 md:mt-auto grid gap-3 sm:grid-cols-3`. `md:mt-auto` уже прижимает блок к низу колонки, и при равной высоте обеих колонок (`md:items-stretch`) ряд карточек будет на одной горизонтали с карточкой доверия.
 
-### 2. Right column alignment
-- Change grid to `md:items-stretch` so columns stretch equally. Right-column wrapper becomes `flex flex-col` so the 3 feature mini-cards row can be pushed to the bottom with `mt-auto` on its container — this makes the feature-card row line up horizontally with the trust card on the left.
-- Bottom accent line stays after the grid, unchanged.
-
-### 3. Tokens
-Reuse existing utilities only: `glass-panel-strong`, `bg-gradient-hero`, `shadow-soft`, `shadow-elegant`, `text-gradient`. No CSS/token additions.
-
-## Out of scope
-- Admin photo upload, server functions, storage — untouched.
-- Right-column copy, headline, body text, feature card content, bottom accent — untouched.
-- Light/dark theme tokens — untouched.
+## Вне рамок
+- Загрузка фото через админку, серверные функции, токены темы, тексты, иконки, цвета — не трогаем.
+- Структура правой колонки (заголовок, абзацы, контент карточек) — без изменений.
+- Адаптив для мобильных сохраняется (`flex-col` стек на узких экранах).
