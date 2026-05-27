@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PlanCard } from "@/components/PlanCard";
 import { useAuth } from "@/lib/auth-context";
 import { getPublicCatalog } from "@/lib/public-data.functions";
+import { getPreselectedGenius } from "@/lib/preselected-genius";
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
@@ -36,6 +38,20 @@ function PricingPage() {
 
   const handleSelect = (slug: string) => {
     if (loading) return;
+    if (slug === "one_genius") {
+      const genius = getPreselectedGenius();
+      if (!genius) {
+        toast.info("Сначала выберите своего Гения в каталоге.");
+        navigate({ to: "/", hash: "catalog" } as never);
+        return;
+      }
+      if (!session) {
+        navigate({ to: "/register", search: { plan: slug, genius } as never });
+      } else {
+        navigate({ to: "/checkout", search: { plan: slug, genius } as never });
+      }
+      return;
+    }
     if (!session) {
       navigate({ to: "/register", search: { plan: slug } as never });
     } else {

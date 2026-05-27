@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { getPublicCatalog } from "@/lib/public-data.functions";
 import { CATEGORY_LABELS } from "@/lib/access";
 import { getGeniusVisual } from "@/lib/genius-icons";
+import { useAuth } from "@/lib/auth-context";
+import { getPreselectedGenius, setPreselectedGenius } from "@/lib/preselected-genius";
+import { useState, useEffect } from "react";
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
@@ -36,6 +40,46 @@ const PLAN_FEATURES: Record<string, string[]> = {
 function LandingPage() {
   const { data } = useSuspenseQuery(catalogQuery);
   const { plans, geniuses } = data;
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedSlug(getPreselectedGenius());
+  }, []);
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSelectGenius = (slug: string, name: string) => {
+    setPreselectedGenius(slug);
+    setSelectedSlug(slug);
+    toast.success(`Гений «${name}» выбран. Теперь выберите тариф.`);
+    scrollTo("pricing");
+  };
+
+  const handlePlanSelect = (slug: string) => {
+    if (slug === "one_genius") {
+      const genius = getPreselectedGenius();
+      if (!genius) {
+        toast.info("Сначала выберите своего Гения в каталоге.");
+        scrollTo("catalog");
+        return;
+      }
+      if (session) {
+        navigate({ to: "/checkout", search: { plan: slug, genius } as never });
+      } else {
+        navigate({ to: "/register", search: { plan: slug, genius } as never });
+      }
+      return;
+    }
+    if (session) {
+      navigate({ to: "/checkout", search: { plan: slug } as never });
+    } else {
+      navigate({ to: "/register", search: { plan: slug } as never });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,16 +140,24 @@ function LandingPage() {
       </section>
 
       {/* КАТАЛОГ ГЕНИЕВ */}
-      <section className="relative bg-gradient-mesh py-20">
+      <section id="catalog" className="relative bg-gradient-mesh py-20 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight">Каталог Гениев</h2>
-          <p className="mt-3 text-center text-muted-foreground">18 наставников по самым важным направлениям</p>
+          <p className="mt-3 text-center text-muted-foreground">
+            Выберите Гения, который подходит именно вам — затем подберём тариф.
+          </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {geniuses.map((g) => {
               const { Icon, gradientClass } = getGeniusVisual(g.slug, g.category);
+              const isSelected = selectedSlug === g.slug;
               return (
-                <div key={g.id} className="group glass-panel rounded-3xl p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant">
+                <div
+                  key={g.id}
+                  className={`group glass-panel flex flex-col rounded-3xl p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant ${
+                    isSelected ? "ring-2 ring-primary shadow-elegant" : ""
+                  }`}
+                >
                   <div className="flex items-start justify-between">
                     {g.image_url ? (
                       <div className="h-12 w-12 overflow-hidden rounded-2xl shadow-soft ring-1 ring-white/50">
@@ -121,7 +173,21 @@ function LandingPage() {
                     </span>
                   </div>
                   <h3 className="mt-5 font-semibold tracking-tight">{g.name}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{g.short_description}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2 flex-1">{g.short_description}</p>
+                  <Button
+                    onClick={() => handleSelectGenius(g.slug, g.name)}
+                    size="sm"
+                    variant={isSelected ? "default" : "outline"}
+                    className={`mt-4 w-full ${isSelected ? "bg-gradient-hero text-primary-foreground shadow-soft" : ""}`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <Check className="mr-1.5 h-4 w-4" /> Выбран
+                      </>
+                    ) : (
+                      "Выбрать этого Гения"
+                    )}
+                  </Button>
                 </div>
               );
             })}
@@ -216,11 +282,13 @@ function LandingPage() {
                   </p>
                 </div>
                 <div className="mt-8">
-                  <Button asChild size="lg" className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95">
-                    <Link to="/pricing">
-                      Выбрать своего Гения
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95"
+                    onClick={() => scrollTo("catalog")}
+                  >
+                    Выбрать своего Гения
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -230,9 +298,13 @@ function LandingPage() {
       </section>
 
       {/* ТАРИФЫ */}
-      <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+      <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center">Тарифы</h2>
-        <p className="mt-3 text-center text-muted-foreground">Выберите формат, который подходит вам или вашей семье.</p>
+        <p className="mt-3 text-center text-muted-foreground">
+          {selectedSlug
+            ? "Гений выбран — осталось подобрать удобный формат доступа."
+            : "Для тарифа «Один Гений» сначала выберите Гения в каталоге выше."}
+        </p>
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {plans.map((p) => (
             <PlanCard
@@ -242,7 +314,8 @@ function LandingPage() {
               description={p.description ?? ""}
               features={PLAN_FEATURES[p.slug] ?? []}
               highlight={p.slug === "family"}
-              onSelect={() => { window.location.href = `/pricing`; }}
+              ctaLabel={p.slug === "one_genius" && !selectedSlug ? "Сначала выберите Гения" : "Выбрать тариф"}
+              onSelect={() => handlePlanSelect(p.slug)}
             />
           ))}
         </div>
@@ -285,11 +358,14 @@ function LandingPage() {
               <Link to="/register">
                 <Button size="lg" variant="secondary" className="active:scale-[0.98] transition-transform">Создать аккаунт</Button>
               </Link>
-              <Link to="/pricing">
-                <Button size="lg" variant="ghost" className="glass-panel-dark border border-white/30 text-white hover:bg-white/20 hover:text-white">
-                  К тарифам
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="ghost"
+                className="glass-panel-dark border border-white/30 text-white hover:bg-white/20 hover:text-white"
+                onClick={() => scrollTo("catalog")}
+              >
+                Выбрать Гения
+              </Button>
             </div>
           </div>
         </div>

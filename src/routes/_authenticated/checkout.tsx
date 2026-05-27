@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { activateMockSubscription } from "@/lib/subscription.functions";
 import { getPublicCatalog } from "@/lib/public-data.functions";
+import { setPreselectedGenius } from "@/lib/preselected-genius";
 
-interface CheckoutSearch { plan?: string }
+interface CheckoutSearch { plan?: string; genius?: string }
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
@@ -21,12 +22,13 @@ export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [{ title: "Оформление — Академия Гениев" }] }),
   validateSearch: (s: Record<string, unknown>): CheckoutSearch => ({
     plan: typeof s.plan === "string" ? s.plan : undefined,
+    genius: typeof s.genius === "string" ? s.genius : undefined,
   }),
   component: CheckoutPage,
 });
 
 function CheckoutPage() {
-  const { plan } = Route.useSearch();
+  const { plan, genius } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const activate = useServerFn(activateMockSubscription);
@@ -34,11 +36,15 @@ function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const selected = data?.plans.find((p) => p.slug === plan);
+  const selectedGenius = data?.geniuses.find((g) => g.slug === genius);
 
   const handlePay = async () => {
     if (!plan) return;
     setSubmitting(true);
     try {
+      if (plan === "one_genius" && genius) {
+        setPreselectedGenius(genius);
+      }
       await activate({ data: { planSlug: plan as "one_genius" | "school" | "family" | "full" } });
       await qc.invalidateQueries({ queryKey: ["dashboard"] });
       navigate({ to: "/success" });
@@ -73,6 +79,14 @@ function CheckoutPage() {
                 <div className="text-2xl font-bold">{selected.price.toLocaleString("ru-RU")} ₽</div>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">{selected.description}</p>
+
+              {plan === "one_genius" && selectedGenius && (
+                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <span className="text-muted-foreground">Выбранный Гений: </span>
+                  <span className="font-semibold">{selectedGenius.name}</span>
+                </div>
+              )}
+
 
               <div className="mt-6 rounded-xl bg-gradient-soft p-4 text-xs text-muted-foreground">
                 Это тестовая заявка — реальная оплата не списывается. После отправки администратор откроет доступ вручную.

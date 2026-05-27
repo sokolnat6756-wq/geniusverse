@@ -8,12 +8,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
-interface RegisterSearch { plan?: string }
+interface RegisterSearch { plan?: string; genius?: string }
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Регистрация — Академия Гениев" }] }),
   validateSearch: (search: Record<string, unknown>): RegisterSearch => ({
     plan: typeof search.plan === "string" ? search.plan : undefined,
+    genius: typeof search.genius === "string" ? search.genius : undefined,
   }),
   component: RegisterPage,
 });
@@ -29,10 +30,13 @@ function RegisterPage() {
 
   useEffect(() => {
     if (session) {
-      if (search.plan) navigate({ to: "/checkout", search: { plan: search.plan } as never });
-      else navigate({ to: "/dashboard" });
+      if (search.plan) {
+        const next: Record<string, string> = { plan: search.plan };
+        if (search.genius) next.genius = search.genius;
+        navigate({ to: "/checkout", search: next as never });
+      } else navigate({ to: "/dashboard" });
     }
-  }, [session, navigate, search.plan]);
+  }, [session, navigate, search.plan, search.genius]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

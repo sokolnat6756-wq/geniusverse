@@ -13,7 +13,8 @@ import { getDashboardData, selectOneGenius } from "@/lib/subscription.functions"
 import { getIsAdmin } from "@/lib/admin.functions";
 import { isGeniusUnlocked, PLAN_LABELS } from "@/lib/access";
 import { getGeniusVisual } from "@/lib/genius-icons";
-import { useEffect } from "react";
+import { getPreselectedGenius, clearPreselectedGenius } from "@/lib/preselected-genius";
+import { useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Кабинет — Академия Гениев" }] }),
@@ -46,6 +47,32 @@ function DashboardPage() {
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [picking, setPicking] = useState<string | null>(null);
+  const autoApplied = useRef(false);
+
+  useEffect(() => {
+    if (autoApplied.current) return;
+    if (!data) return;
+    const { subscription, selectedOneGenius, geniuses } = data;
+    if (subscription?.plan_slug !== "one_genius") return;
+    if (selectedOneGenius) {
+      clearPreselectedGenius();
+      return;
+    }
+    const slug = getPreselectedGenius();
+    if (!slug) return;
+    if (!geniuses.some((g) => g.slug === slug)) return;
+    autoApplied.current = true;
+    (async () => {
+      try {
+        await chooseGenius({ data: { geniusSlug: slug } });
+        clearPreselectedGenius();
+        await qc.invalidateQueries({ queryKey: ["dashboard"] });
+        toast.success("Ваш Гений активирован!");
+      } catch {
+        autoApplied.current = false;
+      }
+    })();
+  }, [data, chooseGenius, qc]);
 
   if (adminLoading || adminData?.isAdmin || isLoading || !data) {
     return (
