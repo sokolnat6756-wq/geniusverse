@@ -13,7 +13,8 @@ import { getDashboardData, selectOneGenius } from "@/lib/subscription.functions"
 import { getIsAdmin } from "@/lib/admin.functions";
 import { isGeniusUnlocked, PLAN_LABELS } from "@/lib/access";
 import { getGeniusVisual } from "@/lib/genius-icons";
-import { useEffect } from "react";
+import { getPreselectedGenius, clearPreselectedGenius } from "@/lib/preselected-genius";
+import { useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Кабинет — Академия Гениев" }] }),
