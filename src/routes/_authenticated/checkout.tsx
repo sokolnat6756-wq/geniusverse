@@ -75,7 +75,7 @@ function CheckoutPage() {
               <p className="mt-2 text-sm text-muted-foreground">{selected.description}</p>
 
               <div className="mt-6 rounded-xl bg-gradient-soft p-4 text-xs text-muted-foreground">
-                На этом этапе MVP оплата не списывается. После клика тариф активируется в вашем кабинете.
+                Это тестовая заявка — реальная оплата не списывается. После отправки администратор откроет доступ вручную.
               </div>
 
               <Button
@@ -84,13 +84,14 @@ function CheckoutPage() {
                 className="mt-6 w-full bg-gradient-hero text-primary-foreground shadow-soft"
                 size="lg"
               >
-                {submitting ? "Активируем..." : "Оплатить тестово"}
+                {submitting ? "Отправляем..." : "Отправить заявку"}
               </Button>
               <p className="mt-3 text-xs text-muted-foreground text-center">
-                Нажимая «Оплатить», вы принимаете условия{" "}
+                Нажимая «Отправить заявку», вы принимаете условия{" "}
                 <Link to="/offer" className="text-primary hover:underline">оферты</Link>.
               </p>
             </>
+
           )}
         </div>
       </section>
