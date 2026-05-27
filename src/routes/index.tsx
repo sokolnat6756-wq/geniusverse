@@ -62,6 +62,7 @@ function LandingPage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button
               size="lg"
+              variant="outline"
               className="glass-panel border-white/50 bg-sky-500 text-white hover:bg-sky-400"
               onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
             >
