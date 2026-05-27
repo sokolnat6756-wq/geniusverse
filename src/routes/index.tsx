@@ -195,7 +195,7 @@ function LandingPage() {
 
 
               {/* Текст */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-3 flex flex-col">
                 <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
                   <Heart className="h-3.5 w-3.5" /> Личное слово основателя
                 </span>
