@@ -25,22 +25,36 @@ export function GeniusCard({ genius, unlocked, onUnlockClick }: GeniusCardProps)
       )}
     >
       <div className="flex items-start justify-between">
-        <div
-          className={cn(
-            "grid h-12 w-12 place-items-center rounded-2xl shadow-soft transition-transform duration-300",
-            unlocked
-              ? `bg-gradient-to-br ${gradientClass} ring-1 ring-white/50 group-hover:scale-105`
-              : "bg-muted ring-1 ring-white/30",
-          )}
-        >
-          <Icon
+        {genius.image_url ? (
+          <div className="h-12 w-12 overflow-hidden rounded-2xl shadow-soft ring-1 ring-white/50">
+            <img
+              src={genius.image_url}
+              alt={genius.name}
+              className={cn(
+                "h-full w-full object-cover transition-transform duration-300",
+                unlocked ? "group-hover:scale-105" : "opacity-60 grayscale",
+              )}
+              loading="lazy"
+            />
+          </div>
+        ) : (
+          <div
             className={cn(
-              "h-6 w-6",
-              unlocked ? "text-white" : "text-muted-foreground",
+              "grid h-12 w-12 place-items-center rounded-2xl shadow-soft transition-transform duration-300",
+              unlocked
+                ? `bg-gradient-to-br ${gradientClass} ring-1 ring-white/50 group-hover:scale-105`
+                : "bg-muted ring-1 ring-white/30",
             )}
-            strokeWidth={2}
-          />
-        </div>
+          >
+            <Icon
+              className={cn(
+                "h-6 w-6",
+                unlocked ? "text-white" : "text-muted-foreground",
+              )}
+              strokeWidth={2}
+            />
+          </div>
+        )}
         {unlocked ? (
           <Badge variant="secondary" className="text-[10px]">
             {CATEGORY_LABELS[genius.category] ?? genius.category}
