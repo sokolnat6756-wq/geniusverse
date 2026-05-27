@@ -358,11 +358,14 @@ function LandingPage() {
               <Link to="/register">
                 <Button size="lg" variant="secondary" className="active:scale-[0.98] transition-transform">Создать аккаунт</Button>
               </Link>
-              <Link to="/pricing">
-                <Button size="lg" variant="ghost" className="glass-panel-dark border border-white/30 text-white hover:bg-white/20 hover:text-white">
-                  К тарифам
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="ghost"
+                className="glass-panel-dark border border-white/30 text-white hover:bg-white/20 hover:text-white"
+                onClick={() => scrollTo("catalog")}
+              >
+                Выбрать Гения
+              </Button>
             </div>
           </div>
         </div>
