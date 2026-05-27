@@ -79,16 +79,8 @@ type Row = {
   image_url: string | null;
 };
 
-async function fileToBase64(file: File): Promise<string> {
-  const buf = await file.arrayBuffer();
-  let bin = "";
-  const bytes = new Uint8Array(buf);
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-  }
-  return btoa(bin);
-}
+
+
 
 function AdminGeniusesPage() {
   const listFn = useServerFn(listAllGeniuses);
