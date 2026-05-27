@@ -38,6 +38,20 @@ function PricingPage() {
 
   const handleSelect = (slug: string) => {
     if (loading) return;
+    if (slug === "one_genius") {
+      const genius = getPreselectedGenius();
+      if (!genius) {
+        toast.info("Сначала выберите своего Гения в каталоге.");
+        navigate({ to: "/", hash: "catalog" } as never);
+        return;
+      }
+      if (!session) {
+        navigate({ to: "/register", search: { plan: slug, genius } as never });
+      } else {
+        navigate({ to: "/checkout", search: { plan: slug, genius } as never });
+      }
+      return;
+    }
     if (!session) {
       navigate({ to: "/register", search: { plan: slug } as never });
     } else {
