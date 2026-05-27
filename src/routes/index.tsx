@@ -63,7 +63,7 @@ function LandingPage() {
             <Button
               size="lg"
               variant="outline"
-              className="glass-panel border-white/50 bg-sky-500 text-white hover:bg-sky-400"
+              className="glass-panel border-white/50 text-white bg-blue-500 hover:bg-blue-600"
               onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Узнать больше <ArrowRight className="ml-2 h-4 w-4" />
