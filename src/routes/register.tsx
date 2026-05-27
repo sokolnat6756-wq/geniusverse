@@ -28,7 +28,9 @@ function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (session) {
