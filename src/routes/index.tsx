@@ -170,6 +170,65 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* ОСНОВАТЕЛЬ */}
+      <section className="relative overflow-hidden py-20">
+        <div className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl -z-10" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-primary-glow/20 blur-3xl -z-10" />
+
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="glass-panel-strong rounded-[2.5rem] shadow-elegant p-8 md:p-12">
+            <div className="grid gap-10 md:grid-cols-5 md:items-center">
+              {/* Фото */}
+              <div className="md:col-span-2">
+                <div className="relative mx-auto max-w-sm md:max-w-none">
+                  <div className="aspect-[4/5] overflow-hidden rounded-3xl ring-1 ring-white/60 shadow-elegant bg-gradient-hero">
+                    {/* TODO: замените на <img src={founderImage} ... /> после загрузки фото */}
+                    <div className="flex h-full w-full items-center justify-center">
+                      <span className="text-7xl font-bold text-white/90 tracking-tight">А</span>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-center text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Основательница</span> · Академия Гениев
+                  </p>
+                </div>
+              </div>
+
+              {/* Текст */}
+              <div className="md:col-span-3">
+                <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
+                  <Heart className="h-3.5 w-3.5" /> Личное слово основателя
+                </span>
+                <h2 className="mt-5 text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                  Почему я создала <span className="text-gradient">Академию Гениев</span>
+                </h2>
+                <div className="mt-6 space-y-4 text-base text-muted-foreground leading-relaxed">
+                  <p>
+                    Я верю, что технологии должны помогать людям раскрывать потенциал, а не усложнять жизнь.
+                  </p>
+                  <p>
+                    Как мама, предприниматель и человек, который много лет обучает и создает онлайн-проекты,
+                    я увидела, насколько мощным инструментом может стать искусственный интеллект —
+                    если сделать его понятным, полезным и доступным.
+                  </p>
+                  <p>
+                    Так появилась Академия Гениев — пространство AI-помощников для детей, школьников и взрослых,
+                    которые помогают учиться, развиваться и двигаться к результатам быстрее.
+                  </p>
+                </div>
+                <div className="mt-8">
+                  <Button asChild size="lg" className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95">
+                    <Link to="/pricing">
+                      Выбрать своего Гения
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ТАРИФЫ */}
       <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center">Тарифы</h2>
