@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -139,6 +139,91 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* ОСНОВАТЕЛЬ */}
+      <section className="relative overflow-hidden py-20">
+        <div className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl -z-10" aria-hidden />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-primary-glow/20 blur-3xl -z-10" aria-hidden />
+
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="glass-panel-strong rounded-[2.5rem] shadow-elegant p-6 sm:p-8 md:p-12">
+            <div className="grid gap-10 md:grid-cols-5 md:items-start">
+              {/* Фото */}
+              <div className="md:col-span-2">
+                <div className="relative mx-auto max-w-xs md:max-w-none">
+                  <div className="aspect-[4/5] overflow-hidden rounded-3xl ring-1 ring-white/60 shadow-elegant bg-gradient-hero">
+                    {data.founder?.image_url ? (
+                      <img
+                        src={data.founder.image_url}
+                        alt="Юлия Копасова — создатель Академии Гениев"
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <span className="text-7xl font-bold text-white/90 tracking-tight">ЮК</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-5 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Создатель Академии
+                    </p>
+                    <p className="mt-1 text-lg font-semibold tracking-tight">Юлия Копасова</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Текст */}
+              <div className="md:col-span-3">
+                <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
+                  <Heart className="h-3.5 w-3.5" /> Личное слово основателя
+                </span>
+                <h2 className="mt-5 text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                  Идея, которая стала <span className="text-gradient">Академией Гениев</span>
+                </h2>
+                <div className="mt-6 space-y-4 text-base text-muted-foreground leading-relaxed">
+                  <p>
+                    Я создала Академию Гениев, чтобы современные технологии стали не сложностью,
+                    а мощным инструментом развития для детей, школьников и взрослых.
+                  </p>
+                  <p>
+                    Я верю, что каждый человек может раскрыть свой потенциал быстрее, если рядом
+                    есть умный помощник, поддержка и доступ к знаниям.
+                  </p>
+                  <p>
+                    Так появилась Академия Гениев — пространство AI-помощников для обучения,
+                    роста и новых возможностей.
+                  </p>
+                </div>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  {[
+                    { icon: Sparkles, title: "Умные AI-помощники", text: "Поддержка в учебе, развитии и достижении целей." },
+                    { icon: Target, title: "Индивидуальный подход", text: "Каждый Гений создан для конкретных задач и потребностей." },
+                    { icon: ShieldCheck, title: "Безопасное пространство", text: "Контролируемый доступ и современная цифровая среда." },
+                  ].map((f) => (
+                    <div key={f.title} className="glass-panel rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-elegant">
+                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft ring-1 ring-white/50">
+                        <f.icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-3 text-sm font-semibold tracking-tight">{f.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{f.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 border-t border-white/40 pt-6 text-center">
+              <p className="text-base md:text-lg font-medium italic text-gradient">
+                Мечтайте. Учитесь. Действуйте. Будущее начинается сегодня.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
       {/* КАТАЛОГ ГЕНИЕВ */}
       <section id="catalog" className="relative bg-gradient-mesh py-20 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -236,66 +321,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* ОСНОВАТЕЛЬ */}
-      <section className="relative overflow-hidden py-20">
-        <div className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl -z-10" />
-        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-primary-glow/20 blur-3xl -z-10" />
-
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="glass-panel-strong rounded-[2.5rem] shadow-elegant p-8 md:p-12">
-            <div className="grid gap-10 md:grid-cols-5 md:items-center">
-              {/* Фото */}
-              <div className="md:col-span-2">
-                <div className="relative mx-auto max-w-sm md:max-w-none">
-                  <div className="aspect-[4/5] overflow-hidden rounded-3xl ring-1 ring-white/60 shadow-elegant bg-gradient-hero">
-                    {/* TODO: замените на <img src={founderImage} ... /> после загрузки фото */}
-                    <div className="flex h-full w-full items-center justify-center">
-                      <span className="text-7xl font-bold text-white/90 tracking-tight">А</span>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-center text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Основательница</span> · Академия Гениев
-                  </p>
-                </div>
-              </div>
-
-              {/* Текст */}
-              <div className="md:col-span-3">
-                <span className="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 text-xs font-medium text-primary">
-                  <Heart className="h-3.5 w-3.5" /> Личное слово основателя
-                </span>
-                <h2 className="mt-5 text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-                  Идея, которая стала <span className="text-gradient">Академией Гениев</span>
-                </h2>
-                <div className="mt-6 space-y-4 text-base text-muted-foreground leading-relaxed">
-                  <p>
-                    Я верю, что технологии должны помогать людям раскрывать потенциал, а не усложнять жизнь.
-                  </p>
-                  <p>
-                    Как мама, предприниматель и человек, который много лет обучает и создает онлайн-проекты,
-                    я увидела, насколько мощным инструментом может стать искусственный интеллект —
-                    если сделать его понятным, полезным и доступным.
-                  </p>
-                  <p>
-                    Так появилась Академия Гениев — пространство AI-помощников для детей, школьников и взрослых,
-                    которые помогают учиться, развиваться и двигаться к результатам быстрее.
-                  </p>
-                </div>
-                <div className="mt-8">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-hero text-primary-foreground shadow-elegant hover:opacity-95"
-                    onClick={() => scrollTo("catalog")}
-                  >
-                    Выбрать своего Гения
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ТАРИФЫ */}
       <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 scroll-mt-20">

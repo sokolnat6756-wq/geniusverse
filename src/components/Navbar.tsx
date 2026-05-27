@@ -64,6 +64,9 @@ export function Navbar() {
                   <Link to="/admin/orders" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
                     Заказы
                   </Link>
+                  <Link to="/admin/settings" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    Настройки
+                  </Link>
                 </>
               )}
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
@@ -102,6 +105,7 @@ export function Navbar() {
                     <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка · Гении</Link>
                     <Link to="/admin/users" onClick={() => setOpen(false)} className="py-2">Админка · Пользователи</Link>
                     <Link to="/admin/orders" onClick={() => setOpen(false)} className="py-2">Админка · Заказы</Link>
+                    <Link to="/admin/settings" onClick={() => setOpen(false)} className="py-2">Админка · Настройки</Link>
                   </>
                 )}
                 <Button variant="outline" onClick={() => { setOpen(false); handleLogout(); }}>Выйти</Button>
