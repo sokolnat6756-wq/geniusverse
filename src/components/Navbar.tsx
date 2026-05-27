@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { getIsAdmin } from "@/lib/admin.functions";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Navbar() {
   const { session, loading } = useAuth();
