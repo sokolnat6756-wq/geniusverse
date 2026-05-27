@@ -34,8 +34,26 @@ import {
   updateGenius,
   createGenius,
   deleteGenius,
-  uploadGeniusImage,
 } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
+
+async function uploadImageToStorage(file: File): Promise<string> {
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error("Файл слишком большой (макс. 10 МБ)");
+  }
+  if (!/^image\//.test(file.type)) {
+    throw new Error("Поддерживаются только изображения");
+  }
+  const ext = (file.name.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "bin";
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("genius-images").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from("genius-images").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 export const Route = createFileRoute("/_authenticated/admin/geniuses")({
   beforeLoad: async () => {
