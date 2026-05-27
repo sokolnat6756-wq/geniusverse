@@ -99,19 +99,19 @@ export const activateMockSubscription = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context;
 
-    // Cancel any existing active subscriptions (admin client, scoped to this user)
+    // Remove any previous pending request for this user (keep active untouched)
     await supabaseAdmin
       .from("subscriptions")
-      .update({ status: "cancelled" })
+      .delete()
       .eq("user_id", userId)
-      .eq("status", "active");
+      .eq("status", "pending");
 
     const { data: sub, error } = await supabaseAdmin
       .from("subscriptions")
       .insert({
         user_id: userId,
         plan_slug: data.planSlug,
-        status: "active",
+        status: "pending",
       })
       .select()
       .single();
