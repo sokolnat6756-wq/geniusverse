@@ -106,9 +106,21 @@ function AdminGeniusesPage() {
           </div>
           <CreateGeniusDialog
             categories={categories}
-            uploadFn={uploadFn}
-            createFn={createFn}
-            onCreated={invalidate}
+            onUpload={async (file) => {
+              const dataBase64 = await fileToBase64(file);
+              const res = await uploadFn({
+                data: {
+                  fileName: file.name,
+                  contentType: file.type || "image/png",
+                  dataBase64,
+                },
+              });
+              return res.url;
+            }}
+            onCreate={async (payload) => {
+              await createFn({ data: payload });
+              invalidate();
+            }}
           />
         </header>
 
