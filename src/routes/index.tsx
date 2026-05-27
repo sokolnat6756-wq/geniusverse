@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, GraduationCap, Users, Zap, Heart, ShieldCheck, Check, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
