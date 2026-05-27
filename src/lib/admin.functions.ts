@@ -310,12 +310,13 @@ export const grantAccess = createServerFn({ method: "POST" })
       data.geniusSlug,
     );
 
-    // cancel previous active subscriptions
+    // cancel previous active subscriptions and clear pending requests
     await supabaseAdmin
       .from("subscriptions")
       .update({ status: "cancelled" })
       .eq("user_id", data.userId)
-      .eq("status", "active");
+      .in("status", ["active", "pending"]);
+
 
     const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({
       user_id: data.userId,
