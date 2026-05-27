@@ -52,6 +52,8 @@ type UserRow = {
   created_at: string;
   plan_slug: string | null;
   status: string | null;
+  pending_plan_slug: string | null;
+  pending_created_at: string | null;
   geniuses_count: number;
   one_genius_slug: string | null;
 };
