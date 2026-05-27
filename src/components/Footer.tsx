@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Send } from "lucide-react";
 
 export function Footer() {
   return (
@@ -28,14 +28,27 @@ export function Footer() {
           <h4 className="font-semibold mb-3">Правовая информация</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</Link></li>
+            <li><Link to="/consent" className="hover:text-foreground transition-colors">Согласие на обработку персональных данных</Link></li>
             <li><Link to="/offer" className="hover:text-foreground transition-colors">Публичная оферта</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="font-semibold mb-3">Контакты</h4>
-          <p className="text-sm text-muted-foreground">
-            hello@academy-genius.ru
-          </p>
+          <p className="text-sm text-muted-foreground">hello@academy-genius.ru</p>
+          <a
+            href="https://t.me/digital_izba"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 py-2 text-sm text-foreground/90 shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            <span className="grid h-7 w-7 place-items-center rounded-md bg-gradient-hero text-primary-foreground shadow-soft">
+              <Send className="h-3.5 w-3.5" />
+            </span>
+            <span>
+              <span className="block text-xs text-muted-foreground leading-none">Поддержка</span>
+              <span className="block font-medium leading-tight">Telegram</span>
+            </span>
+          </a>
         </div>
       </div>
       <div className="border-t border-border/40 py-6 text-center text-xs text-muted-foreground">
