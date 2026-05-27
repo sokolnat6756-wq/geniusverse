@@ -401,16 +401,24 @@ function GeniusRow({
   );
 }
 
+type CreateGeniusPayload = {
+  name: string;
+  slug: string;
+  emoji: string;
+  category: string;
+  short_description: string;
+  chatgpt_url: string;
+  image_url: string;
+};
+
 function CreateGeniusDialog({
   categories,
-  uploadFn,
-  createFn,
-  onCreated,
+  onUpload,
+  onCreate,
 }: {
   categories: string[];
-  uploadFn: ReturnType<typeof useServerFn<typeof uploadGeniusImage>>;
-  createFn: ReturnType<typeof useServerFn<typeof createGenius>>;
-  onCreated: () => void;
+  onUpload: (file: File) => Promise<string>;
+  onCreate: (payload: CreateGeniusPayload) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -438,15 +446,8 @@ function CreateGeniusDialog({
     if (!file) return;
     setUploading(true);
     try {
-      const dataBase64 = await fileToBase64(file);
-      const res = await uploadFn({
-        data: {
-          fileName: file.name,
-          contentType: file.type || "image/png",
-          dataBase64,
-        },
-      });
-      setImageUrl(res.url);
+      const u = await onUpload(file);
+      setImageUrl(u);
       toast.success("Фото загружено");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ошибка загрузки");
@@ -458,20 +459,17 @@ function CreateGeniusDialog({
 
   const createMutation = useMutation({
     mutationFn: () =>
-      createFn({
-        data: {
-          name,
-          slug,
-          emoji,
-          category,
-          short_description: desc,
-          chatgpt_url: url,
-          image_url: imageUrl,
-        },
+      onCreate({
+        name,
+        slug,
+        emoji,
+        category,
+        short_description: desc,
+        chatgpt_url: url,
+        image_url: imageUrl,
       }),
     onSuccess: () => {
       toast.success("Гений добавлен");
-      onCreated();
       reset();
       setOpen(false);
     },
