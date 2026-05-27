@@ -48,9 +48,11 @@ export function Navbar() {
           </Link>
           {session ? (
             <>
-              <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                Кабинет
-              </Link>
+              {!isAdmin && (
+                <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Кабинет
+                </Link>
+              )}
               {isAdmin && (
                 <>
                   <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
