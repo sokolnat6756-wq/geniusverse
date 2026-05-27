@@ -59,6 +59,9 @@ export function Navbar() {
                   <Link to="/admin/users" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
                     Пользователи
                   </Link>
+                  <Link to="/admin/orders" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                    Заказы
+                  </Link>
                 </>
               )}
               <Button variant="ghost" onClick={handleLogout}>Выйти</Button>
