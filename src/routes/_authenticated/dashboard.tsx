@@ -55,9 +55,13 @@ function DashboardPage() {
     );
   }
 
-  const { profile, subscription, geniuses, selectedOneGenius } = data;
+  const { profile, subscription, pendingSubscription, geniuses, selectedOneGenius } = data;
   const planSlug = subscription?.plan_slug ?? null;
   const planLabel = planSlug ? PLAN_LABELS[planSlug] ?? planSlug : "Нет активного тарифа";
+  const pendingPlanLabel = pendingSubscription
+    ? PLAN_LABELS[pendingSubscription.plan_slug] ?? pendingSubscription.plan_slug
+    : null;
+  const showPending = !subscription && !!pendingSubscription;
 
   const handleChoose = async (slug: string) => {
     setPicking(slug);
@@ -102,7 +106,18 @@ function DashboardPage() {
               </div>
             </div>
 
-            {!subscription && (
+            {showPending && (
+              <div className="mt-6 glass-panel-dark rounded-2xl p-4">
+                <p className="text-sm font-medium">
+                  Ваша заявка на тариф «{pendingPlanLabel}» ожидает подтверждения администратором.
+                </p>
+                <p className="text-xs opacity-80 mt-1">
+                  Доступ к Гениям откроется автоматически, как только админ подтвердит заявку.
+                </p>
+              </div>
+            )}
+
+            {!subscription && !showPending && (
               <div className="mt-6">
                 <Link to="/pricing">
                   <Button variant="secondary" size="lg" className="active:scale-[0.98] transition-transform">
@@ -111,6 +126,7 @@ function DashboardPage() {
                 </Link>
               </div>
             )}
+
 
             {subscription?.plan_slug === "one_genius" && !selectedOneGenius && (
               <div className="mt-6 glass-panel-dark rounded-2xl p-4">

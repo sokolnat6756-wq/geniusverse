@@ -219,21 +219,35 @@ export const listAllUsers = createServerFn({ method: "GET" })
     });
     if (usersErr) throw new Error(usersErr.message);
 
-    const [subsRes, accessRes] = await Promise.all([
+    const [subsRes, pendingRes, accessRes] = await Promise.all([
       supabaseAdmin
         .from("subscriptions")
         .select("user_id,plan_slug,status,created_at")
         .eq("status", "active"),
+      supabaseAdmin
+        .from("subscriptions")
+        .select("user_id,plan_slug,status,created_at")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }),
       supabaseAdmin
         .from("user_genius_access")
         .select("user_id,genius_slug,access_status")
         .eq("access_status", "active"),
     ]);
     if (subsRes.error) throw new Error(subsRes.error.message);
+    if (pendingRes.error) throw new Error(pendingRes.error.message);
     if (accessRes.error) throw new Error(accessRes.error.message);
 
     const subsByUser = new Map<string, { plan_slug: string; status: string }>();
     for (const s of subsRes.data ?? []) subsByUser.set(s.user_id, s);
+
+    // pendingRes is already ordered DESC; keep first (latest) per user
+    const pendingByUser = new Map<string, { plan_slug: string; created_at: string }>();
+    for (const s of pendingRes.data ?? []) {
+      if (!pendingByUser.has(s.user_id)) {
+        pendingByUser.set(s.user_id, { plan_slug: s.plan_slug, created_at: s.created_at });
+      }
+    }
 
     const accessByUser = new Map<string, string[]>();
     for (const a of accessRes.data ?? []) {
@@ -244,6 +258,7 @@ export const listAllUsers = createServerFn({ method: "GET" })
 
     const users = usersData.users.map((u) => {
       const sub = subsByUser.get(u.id);
+      const pending = pendingByUser.get(u.id);
       const slugs = accessByUser.get(u.id) ?? [];
       return {
         user_id: u.id,
@@ -251,6 +266,8 @@ export const listAllUsers = createServerFn({ method: "GET" })
         created_at: u.created_at,
         plan_slug: sub?.plan_slug ?? null,
         status: sub?.status ?? null,
+        pending_plan_slug: pending?.plan_slug ?? null,
+        pending_created_at: pending?.created_at ?? null,
         geniuses_count: slugs.length,
         one_genius_slug: sub?.plan_slug === "one_genius" ? slugs[0] ?? null : null,
       };
@@ -293,12 +310,13 @@ export const grantAccess = createServerFn({ method: "POST" })
       data.geniusSlug,
     );
 
-    // cancel previous active subscriptions
+    // cancel previous active subscriptions and clear pending requests
     await supabaseAdmin
       .from("subscriptions")
       .update({ status: "cancelled" })
       .eq("user_id", data.userId)
-      .eq("status", "active");
+      .in("status", ["active", "pending"]);
+
 
     const { error: subErr } = await supabaseAdmin.from("subscriptions").insert({
       user_id: data.userId,
@@ -340,7 +358,7 @@ export const revokeAccess = createServerFn({ method: "POST" })
       .from("subscriptions")
       .update({ status: "cancelled" })
       .eq("user_id", data.userId)
-      .eq("status", "active");
+      .in("status", ["active", "pending"]);
 
     await supabaseAdmin
       .from("user_genius_access")

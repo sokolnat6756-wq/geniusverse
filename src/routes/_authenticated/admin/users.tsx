@@ -52,6 +52,8 @@ type UserRow = {
   created_at: string;
   plan_slug: string | null;
   status: string | null;
+  pending_plan_slug: string | null;
+  pending_created_at: string | null;
   geniuses_count: number;
   one_genius_slug: string | null;
 };
@@ -133,9 +135,13 @@ function UserActionsRow({
   const grantFn = useServerFn(grantAccess);
   const revokeFn = useServerFn(revokeAccess);
 
-  const initialPlan: PlanChoice =
-    user.status === "active" && user.plan_slug
-      ? (user.plan_slug as PlanChoice)
+  const hasActive = user.status === "active" && !!user.plan_slug;
+  const hasPending = !hasActive && !!user.pending_plan_slug;
+
+  const initialPlan: PlanChoice = hasActive
+    ? (user.plan_slug as PlanChoice)
+    : hasPending
+      ? (user.pending_plan_slug as PlanChoice)
       : "no_access";
 
   const [plan, setPlan] = useState<PlanChoice>(initialPlan);
@@ -189,9 +195,13 @@ function UserActionsRow({
           : "—"}
       </TableCell>
       <TableCell className="text-sm">
-        {user.status === "active" ? (
+        {hasActive ? (
           <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
             активна
+          </span>
+        ) : hasPending ? (
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+            заявка: {PLAN_LABELS[user.pending_plan_slug!] ?? user.pending_plan_slug}
           </span>
         ) : (
           <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">

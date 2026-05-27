@@ -9,13 +9,21 @@ export const getDashboardData = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, subRes, geniusesRes, accessRes] = await Promise.all([
+    const [profileRes, subRes, pendingRes, geniusesRes, accessRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId)
         .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -60,6 +68,7 @@ export const getDashboardData = createServerFn({ method: "GET" })
     return {
       profile: profileRes.data,
       subscription: subRes.data,
+      pendingSubscription: pendingRes.data,
       geniuses,
       selectedOneGenius,
     };
@@ -90,19 +99,19 @@ export const activateMockSubscription = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context;
 
-    // Cancel any existing active subscriptions (admin client, scoped to this user)
+    // Remove any previous pending request for this user (keep active untouched)
     await supabaseAdmin
       .from("subscriptions")
-      .update({ status: "cancelled" })
+      .delete()
       .eq("user_id", userId)
-      .eq("status", "active");
+      .eq("status", "pending");
 
     const { data: sub, error } = await supabaseAdmin
       .from("subscriptions")
       .insert({
         user_id: userId,
         plan_slug: data.planSlug,
-        status: "active",
+        status: "pending",
       })
       .select()
       .single();
