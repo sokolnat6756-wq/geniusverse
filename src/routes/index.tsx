@@ -73,7 +73,7 @@ function LandingPage() {
       </section>
 
       {/* ДЛЯ КОГО */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+      <section id="about" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center">Для кого Академия</h2>
         <p className="mt-3 text-center text-muted-foreground max-w-2xl mx-auto">
           Гении помогают на любом этапе — от первых букв до собственного бизнеса.
