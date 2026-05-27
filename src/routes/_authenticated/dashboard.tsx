@@ -106,7 +106,18 @@ function DashboardPage() {
               </div>
             </div>
 
-            {!subscription && (
+            {showPending && (
+              <div className="mt-6 glass-panel-dark rounded-2xl p-4">
+                <p className="text-sm font-medium">
+                  Ваша заявка на тариф «{pendingPlanLabel}» ожидает подтверждения администратором.
+                </p>
+                <p className="text-xs opacity-80 mt-1">
+                  Доступ к Гениям откроется автоматически, как только админ подтвердит заявку.
+                </p>
+              </div>
+            )}
+
+            {!subscription && !showPending && (
               <div className="mt-6">
                 <Link to="/pricing">
                   <Button variant="secondary" size="lg" className="active:scale-[0.98] transition-transform">
@@ -115,6 +126,7 @@ function DashboardPage() {
                 </Link>
               </div>
             )}
+
 
             {subscription?.plan_slug === "one_genius" && !selectedOneGenius && (
               <div className="mt-6 glass-panel-dark rounded-2xl p-4">
