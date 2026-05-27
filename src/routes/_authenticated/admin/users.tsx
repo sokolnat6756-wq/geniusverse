@@ -135,9 +135,13 @@ function UserActionsRow({
   const grantFn = useServerFn(grantAccess);
   const revokeFn = useServerFn(revokeAccess);
 
-  const initialPlan: PlanChoice =
-    user.status === "active" && user.plan_slug
-      ? (user.plan_slug as PlanChoice)
+  const hasActive = user.status === "active" && !!user.plan_slug;
+  const hasPending = !hasActive && !!user.pending_plan_slug;
+
+  const initialPlan: PlanChoice = hasActive
+    ? (user.plan_slug as PlanChoice)
+    : hasPending
+      ? (user.pending_plan_slug as PlanChoice)
       : "no_access";
 
   const [plan, setPlan] = useState<PlanChoice>(initialPlan);
