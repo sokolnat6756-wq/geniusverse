@@ -217,7 +217,7 @@ function LandingPage() {
                   </p>
                 </div>
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="mt-8 md:mt-auto md:pt-8 grid gap-3 sm:grid-cols-3">
                   {[
                     { icon: Sparkles, title: "Умные AI-помощники", text: "Поддержка в учебе, развитии и достижении целей." },
                     { icon: Target, title: "Индивидуальный подход", text: "Каждый Гений создан для конкретных задач и потребностей." },
