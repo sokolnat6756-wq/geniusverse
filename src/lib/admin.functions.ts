@@ -33,7 +33,7 @@ export const listAllGeniuses = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("geniuses")
-      .select("id,name,slug,emoji,category,short_description,chatgpt_url")
+      .select("id,name,slug,emoji,category,short_description,chatgpt_url,image_url")
       .order("category")
       .order("name");
     if (error) throw new Error(error.message);
