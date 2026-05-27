@@ -34,7 +34,7 @@ export function Footer() {
         </div>
         <div>
           <h4 className="font-semibold mb-3">Контакты</h4>
-          <p className="text-sm text-muted-foreground">hello@academy-genius.ru</p>
+          <a href="mailto:y-kopasova@inbox.ru" className="text-sm text-muted-foreground hover:text-foreground transition-colors">y-kopasova@inbox.ru</a>
           <a
             href="https://t.me/digital_izba"
             target="_blank"
