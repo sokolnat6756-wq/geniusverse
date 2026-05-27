@@ -60,14 +60,14 @@ function LandingPage() {
             Обучение становится понятным, добрым и современным.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/register">
-              <Button size="lg" className="bg-gradient-hero text-primary-foreground shadow-elegant active:scale-[0.98] transition-transform">
-                Выбрать Гения <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/pricing">
-              <Button size="lg" variant="outline" className="glass-panel border-white/50">Посмотреть тарифы</Button>
-            </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="glass-panel border-white/50"
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Узнать больше <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </div>
       </section>
