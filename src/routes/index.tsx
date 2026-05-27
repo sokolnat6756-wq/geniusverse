@@ -140,16 +140,24 @@ function LandingPage() {
       </section>
 
       {/* КАТАЛОГ ГЕНИЕВ */}
-      <section className="relative bg-gradient-mesh py-20">
+      <section id="catalog" className="relative bg-gradient-mesh py-20 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center tracking-tight">Каталог Гениев</h2>
-          <p className="mt-3 text-center text-muted-foreground">18 наставников по самым важным направлениям</p>
+          <p className="mt-3 text-center text-muted-foreground">
+            Выберите Гения, который подходит именно вам — затем подберём тариф.
+          </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {geniuses.map((g) => {
               const { Icon, gradientClass } = getGeniusVisual(g.slug, g.category);
+              const isSelected = selectedSlug === g.slug;
               return (
-                <div key={g.id} className="group glass-panel rounded-3xl p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant">
+                <div
+                  key={g.id}
+                  className={`group glass-panel flex flex-col rounded-3xl p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant ${
+                    isSelected ? "ring-2 ring-primary shadow-elegant" : ""
+                  }`}
+                >
                   <div className="flex items-start justify-between">
                     {g.image_url ? (
                       <div className="h-12 w-12 overflow-hidden rounded-2xl shadow-soft ring-1 ring-white/50">
@@ -165,7 +173,21 @@ function LandingPage() {
                     </span>
                   </div>
                   <h3 className="mt-5 font-semibold tracking-tight">{g.name}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{g.short_description}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2 flex-1">{g.short_description}</p>
+                  <Button
+                    onClick={() => handleSelectGenius(g.slug, g.name)}
+                    size="sm"
+                    variant={isSelected ? "default" : "outline"}
+                    className={`mt-4 w-full ${isSelected ? "bg-gradient-hero text-primary-foreground shadow-soft" : ""}`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <Check className="mr-1.5 h-4 w-4" /> Выбран
+                      </>
+                    ) : (
+                      "Выбрать этого Гения"
+                    )}
+                  </Button>
                 </div>
               );
             })}
