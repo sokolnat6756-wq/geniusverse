@@ -358,7 +358,7 @@ export const revokeAccess = createServerFn({ method: "POST" })
       .from("subscriptions")
       .update({ status: "cancelled" })
       .eq("user_id", data.userId)
-      .eq("status", "active");
+      .in("status", ["active", "pending"]);
 
     await supabaseAdmin
       .from("user_genius_access")
