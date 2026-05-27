@@ -9,13 +9,21 @@ export const getDashboardData = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, subRes, geniusesRes, accessRes] = await Promise.all([
+    const [profileRes, subRes, pendingRes, geniusesRes, accessRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase
         .from("subscriptions")
         .select("*")
         .eq("user_id", userId)
         .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
