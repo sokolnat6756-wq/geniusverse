@@ -44,7 +44,12 @@ function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consent) {
+      toast.error("Подтвердите согласие на обработку персональных данных");
+      return;
+    }
     setLoading(true);
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -86,9 +91,24 @@ function RegisterPage() {
             <Label htmlFor="password">Пароль</Label>
             <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5" />
           </div>
-          <Button type="submit" disabled={loading} className="w-full bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">
+          <label htmlFor="consent" className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-background/40 p-3 cursor-pointer hover:bg-background/70 transition-colors">
+            <Checkbox
+              id="consent"
+              checked={consent}
+              onCheckedChange={(v) => setConsent(v === true)}
+              className="mt-0.5"
+            />
+            <span className="text-xs leading-relaxed text-muted-foreground">
+              Я соглашаюсь на{" "}
+              <Link to="/consent" className="text-primary hover:underline">
+                обработку персональных данных
+              </Link>
+            </span>
+          </label>
+          <Button type="submit" disabled={loading || !consent} className="w-full bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">
             {loading ? "Создаём..." : "Создать аккаунт"}
           </Button>
+
           <p className="text-xs text-muted-foreground text-center leading-relaxed">
             Создавая аккаунт, вы соглашаетесь с{" "}
             <Link to="/privacy" className="text-primary hover:underline">Политикой конфиденциальности</Link>
