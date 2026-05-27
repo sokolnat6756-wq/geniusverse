@@ -107,9 +107,15 @@ function LandingPage() {
               return (
                 <div key={g.id} className="group glass-panel rounded-3xl p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:shadow-elegant">
                   <div className="flex items-start justify-between">
-                    <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${gradientClass} shadow-soft ring-1 ring-white/50 transition-transform duration-300 group-hover:scale-105`}>
-                      <Icon className="h-6 w-6 text-white" strokeWidth={2} />
-                    </div>
+                    {g.image_url ? (
+                      <div className="h-12 w-12 overflow-hidden rounded-2xl shadow-soft ring-1 ring-white/50">
+                        <img src={g.image_url} alt={g.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      </div>
+                    ) : (
+                      <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${gradientClass} shadow-soft ring-1 ring-white/50 transition-transform duration-300 group-hover:scale-105`}>
+                        <Icon className="h-6 w-6 text-white" strokeWidth={2} />
+                      </div>
+                    )}
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       {CATEGORY_LABELS[g.category] ?? g.category}
                     </span>
