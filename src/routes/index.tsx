@@ -298,9 +298,13 @@ function LandingPage() {
       </section>
 
       {/* ТАРИФЫ */}
-      <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+      <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 scroll-mt-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center">Тарифы</h2>
-        <p className="mt-3 text-center text-muted-foreground">Выберите формат, который подходит вам или вашей семье.</p>
+        <p className="mt-3 text-center text-muted-foreground">
+          {selectedSlug
+            ? "Гений выбран — осталось подобрать удобный формат доступа."
+            : "Для тарифа «Один Гений» сначала выберите Гения в каталоге выше."}
+        </p>
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {plans.map((p) => (
             <PlanCard
@@ -310,7 +314,8 @@ function LandingPage() {
               description={p.description ?? ""}
               features={PLAN_FEATURES[p.slug] ?? []}
               highlight={p.slug === "family"}
-              onSelect={() => { window.location.href = `/pricing`; }}
+              ctaLabel={p.slug === "one_genius" && !selectedSlug ? "Сначала выберите Гения" : "Выбрать тариф"}
+              onSelect={() => handlePlanSelect(p.slug)}
             />
           ))}
         </div>
