@@ -1,39 +1,23 @@
-# Fix Genius selection flow
+## Changes
 
-## Цель
-Сейчас «Выбрать своего Гения» ведёт сразу к тарифам, но тариф «Один Гений» требует предварительного выбора. Делаем поток: сначала Гений → потом тариф → выбор сохраняется до активации.
+### 1. Footer (`src/components/Footer.tsx`)
+- Add new "Контакты" content: Telegram link rendered as "Поддержка / Telegram" pointing to `https://t.me/digital_izba` (target=_blank, rel=noopener), with a small Telegram/MessageCircle icon, styled with hover color transition matching existing footer link style.
+- Under "Правовая информация" add a third link: **«Согласие на обработку персональных данных»** → `/consent`. Keep existing «Политика конфиденциальности» link → `/privacy` (already present).
 
-## Изменения
+### 2. New legal page `src/routes/consent.tsx`
+- Create a placeholder page modeled exactly on `src/routes/privacy.tsx` (same Navbar/Footer, same typography, same container width).
+- Title: «Согласие на обработку персональных данных».
+- Sections: цели обработки, перечень данных, срок, право отзыва, контактный email. Marked as образец документа.
+- Includes proper `head()` meta (title, description, og:title/description, canonical).
 
-### 1. `src/routes/index.tsx` — каталог становится точкой входа
-- Добавить `id="catalog"` на секцию «Каталог Гениев».
-- Кнопке «Выбрать своего Гения» (секция «Основатель», `<Link to="/pricing">`) заменить на обычную `<Button onClick={…}>` со скроллом к `#catalog`.
-- В каждой карточке каталога добавить CTA `«Выбрать этого Гения»` (сохраняет стиль glass + bg-gradient-hero, как у CTA дашборда). По клику:
-  - сохранить `localStorage.setItem("preselectedGenius", g.slug)`;
-  - плавно проскроллить к секции `#pricing` (она уже есть).
-- В блоке тарифов на лендинге: для карточки `one_genius` CTA должна вести на `/register?plan=one_genius&genius=<slug>` (или `/checkout` если уже залогинен), используя `localStorage` как источник `genius`. Если для `one_genius` Гений не выбран — toast + скролл к каталогу. Остальные тарифы работают как сейчас.
-- Финальный CTA «Выбрать своего Гения» в нижней секции — тоже скроллит к `#catalog`.
+### 3. Registration consent (`src/routes/register.tsx`)
+- Add a required Checkbox (shadcn `@/components/ui/checkbox`) above the submit button with label «Я соглашаюсь на обработку персональных данных», with inline link to `/consent`.
+- Local state `consent: boolean` (default false). Submit button stays clickable but `handleSubmit` guards: if `!consent`, show `toast.error("Подтвердите согласие на обработку персональных данных")` and abort. Also `disabled={loading || !consent}` to keep UX clear.
+- Layout: checkbox + label in a flex row, `items-start gap-2`, label uses `text-xs leading-relaxed text-muted-foreground`. Mobile-responsive (inherits form width).
+- Keep existing legal microcopy below the button intact.
 
-### 2. `src/routes/pricing.tsx` — то же поведение для отдельной страницы
-- При клике на `one_genius`: если в `localStorage` нет `preselectedGenius`, редиректим на `/#catalog` с toast «Сначала выберите Гения». Если есть — добавляем `genius` в search при переходе в `/register` или `/checkout`.
-- Остальные тарифы — без изменений.
-
-### 3. Проброс `genius` через регистрацию и оплату
-- `src/routes/register.tsx`: расширить `validateSearch` полем `genius?: string`. После авторизации передавать `{ plan, genius }` в `/checkout`.
-- `src/routes/_authenticated/checkout.tsx`: расширить `validateSearch` полем `genius?: string`. При submit, если `plan === "one_genius"` и есть `genius` — после `activateMockSubscription` сохранить `localStorage.setItem("preselectedGenius", genius)` (на случай, если ещё не сохранено). Ничего на сервер дополнительно слать не нужно: серверная функция `selectOneGenius` уже требует активную подписку.
-
-### 4. `src/routes/_authenticated/dashboard.tsx` — авто-применение выбора после одобрения
-- В `useEffect`: если `subscription?.plan_slug === "one_genius"`, `!selectedOneGenius`, и в `localStorage` есть `preselectedGenius`, который существует в `geniuses` — автоматически вызвать `chooseGenius({ data: { geniusSlug } })`, инвалидировать `["dashboard"]` и очистить `localStorage`.
-- Если автоприменение не сработало (нет в localStorage) — текущий fallback с кнопкой «Выбрать Гения» и диалогом остаётся.
-
-## Технические детали
-- `localStorage` ключ: `preselectedGenius` (slug string). Очищать после успешной привязки.
-- SSR-safe: все обращения к `localStorage` обернуть `typeof window !== "undefined"`.
-- Серверная логика (`selectOneGenius`, `activateMockSubscription`, RLS, admin approval) — не трогаем. Поток админского ручного одобрения сохраняется как есть.
-- Дизайн карточек каталога: добавляется только нижняя кнопка в существующем стиле `glass-panel` блока, отступы и адаптив сохранены.
-
-## Что НЕ меняем
-- Схема БД, серверные функции, RLS.
-- Регистрация, логин, админ-панель.
-- Hero-секция, прочие секции лендинга.
-- Family / Full / School — продолжают работать через текущий поток `/pricing → /checkout`.
+## Out of scope / preserved
+- Auth flow, Supabase signup call, redirect logic, email verification — unchanged.
+- Existing design tokens, gradients, glass panels — unchanged.
+- No DB / RLS / server function changes.
+- No changes to `/privacy`, `/offer`, or other routes.
