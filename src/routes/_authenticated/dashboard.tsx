@@ -10,8 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useState } from "react";
 import { toast } from "sonner";
 import { getDashboardData, selectOneGenius } from "@/lib/subscription.functions";
+import { getIsAdmin } from "@/lib/admin.functions";
 import { isGeniusUnlocked, PLAN_LABELS } from "@/lib/access";
 import { getGeniusVisual } from "@/lib/genius-icons";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Кабинет — Академия Гениев" }] }),
@@ -23,16 +25,29 @@ function DashboardPage() {
   const qc = useQueryClient();
   const getData = useServerFn(getDashboardData);
   const chooseGenius = useServerFn(selectOneGenius);
+  const isAdminFn = useServerFn(getIsAdmin);
+
+  const { data: adminData, isLoading: adminLoading } = useQuery({
+    queryKey: ["is-admin-dashboard"],
+    queryFn: () => isAdminFn(),
+  });
+
+  useEffect(() => {
+    if (adminData?.isAdmin) {
+      navigate({ to: "/admin/orders" });
+    }
+  }, [adminData, navigate]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => getData(),
+    enabled: adminData ? !adminData.isAdmin : false,
   });
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [picking, setPicking] = useState<string | null>(null);
 
-  if (isLoading || !data) {
+  if (adminLoading || adminData?.isAdmin || isLoading || !data) {
     return (
       <div className="min-h-screen grid place-items-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />

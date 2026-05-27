@@ -48,9 +48,11 @@ export function Navbar() {
           </Link>
           {session ? (
             <>
-              <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-                Кабинет
-              </Link>
+              {!isAdmin && (
+                <Link to="/dashboard" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Кабинет
+                </Link>
+              )}
               {isAdmin && (
                 <>
                   <Link to="/admin/geniuses" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -94,7 +96,7 @@ export function Navbar() {
             <Link to="/pricing" onClick={() => setOpen(false)} className="py-2">Тарифы</Link>
             {session ? (
               <>
-                <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>
+                {!isAdmin && <Link to="/dashboard" onClick={() => setOpen(false)} className="py-2">Кабинет</Link>}
                 {isAdmin && (
                   <>
                     <Link to="/admin/geniuses" onClick={() => setOpen(false)} className="py-2">Админка · Гении</Link>
