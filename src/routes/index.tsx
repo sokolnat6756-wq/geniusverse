@@ -151,7 +151,7 @@ function LandingPage() {
               <div className="md:col-span-2 flex flex-col">
                 {/* Карточка с фото */}
                 <div className="glass-panel-strong rounded-3xl p-3 shadow-soft">
-                  <div className="aspect-[9/16] overflow-hidden rounded-2xl ring-1 ring-white/60 bg-gradient-hero">
+                  <div className="aspect-[4/5] overflow-hidden rounded-2xl ring-1 ring-white/60 bg-gradient-hero">
                     {data.founder?.image_url ? (
                       <img
                         src={data.founder.image_url}
@@ -175,7 +175,7 @@ function LandingPage() {
                   <ul className="space-y-3.5">
                     {[
                       { icon: Users, title: "110 000+", text: "подписчиков" },
-                      { icon: GraduationCap, title: "800+", text: "учеников обучены онлайн" },
+                      { icon: GraduationCap, title: "1000+", text: "учеников обучены онлайн" },
                       { icon: Heart, title: "Мама 3 детей", text: "семья и забота" },
                       { icon: Briefcase, title: "Предприниматель", text: "создатель Академии Гениев" },
                     ].map((f) => (
@@ -217,7 +217,7 @@ function LandingPage() {
                   </p>
                 </div>
 
-                <div className="mt-8 md:mt-auto md:pt-8 grid gap-3 sm:grid-cols-3">
+                <div className="mt-8 md:mt-auto grid gap-3 sm:grid-cols-3">
                   {[
                     { icon: Sparkles, title: "Умные AI-помощники", text: "Поддержка в учебе, развитии и достижении целей." },
                     { icon: Target, title: "Индивидуальный подход", text: "Каждый Гений создан для конкретных задач и потребностей." },
