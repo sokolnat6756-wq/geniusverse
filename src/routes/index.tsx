@@ -40,6 +40,46 @@ const PLAN_FEATURES: Record<string, string[]> = {
 function LandingPage() {
   const { data } = useSuspenseQuery(catalogQuery);
   const { plans, geniuses } = data;
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedSlug(getPreselectedGenius());
+  }, []);
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSelectGenius = (slug: string, name: string) => {
+    setPreselectedGenius(slug);
+    setSelectedSlug(slug);
+    toast.success(`Гений «${name}» выбран. Теперь выберите тариф.`);
+    scrollTo("pricing");
+  };
+
+  const handlePlanSelect = (slug: string) => {
+    if (slug === "one_genius") {
+      const genius = getPreselectedGenius();
+      if (!genius) {
+        toast.info("Сначала выберите своего Гения в каталоге.");
+        scrollTo("catalog");
+        return;
+      }
+      if (session) {
+        navigate({ to: "/checkout", search: { plan: slug, genius } as never });
+      } else {
+        navigate({ to: "/register", search: { plan: slug, genius } as never });
+      }
+      return;
+    }
+    if (session) {
+      navigate({ to: "/checkout", search: { plan: slug } as never });
+    } else {
+      navigate({ to: "/register", search: { plan: slug } as never });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
