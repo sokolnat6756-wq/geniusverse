@@ -80,6 +80,14 @@ function CheckoutPage() {
               </div>
               <p className="mt-2 text-sm text-muted-foreground">{selected.description}</p>
 
+              {plan === "one_genius" && selectedGenius && (
+                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <span className="text-muted-foreground">Выбранный Гений: </span>
+                  <span className="font-semibold">{selectedGenius.name}</span>
+                </div>
+              )}
+
+
               <div className="mt-6 rounded-xl bg-gradient-soft p-4 text-xs text-muted-foreground">
                 Это тестовая заявка — реальная оплата не списывается. После отправки администратор откроет доступ вручную.
               </div>
