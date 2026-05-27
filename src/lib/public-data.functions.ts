@@ -10,7 +10,7 @@ export const getPublicCatalog = createServerFn({ method: "GET" }).handler(
         .order("price"),
       supabaseAdmin
         .from("geniuses")
-        .select("id,name,slug,emoji,category,short_description")
+        .select("id,name,slug,emoji,category,short_description,image_url")
         .order("category")
         .order("name"),
     ]);

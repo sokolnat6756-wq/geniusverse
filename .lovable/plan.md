@@ -1,33 +1,66 @@
-## Проблема
+## Что уже есть (не трогаем)
 
-В финальной CTA-секции «Готовы найти своего Гения?» кнопка «К тарифам»:
+- `/admin/users` — список пользователей, выдача/отзыв доступа.
+- `/admin/geniuses` — редактирование имени, эмодзи, краткого описания и ссылки на ChatGPT.
+- Тарифные планы, каталог Гениев, авторизация, RLS — работают.
 
-```tsx
-<Button size="lg" variant="outline" className="glass-panel-dark border-white/30 text-white hover:bg-white/20 hover:text-white">
-  К тарифам
-</Button>
-```
+## Что добавим
 
-`variant="outline"` из shadcn задаёт `bg-background` — в светлой теме это белый. Класс `glass-panel-dark` ставит лишь полупрозрачную белую плёнку поверх, не перекрывая базовый белый фон. Итог: белый текст на белой кнопке — невидим, пока hover не закрасит фон в `white/20`.
+### 1. Раздел «Заказы» — `/admin/orders`
 
-## Исправление
+В проекте нет отдельной таблицы заказов, но есть `subscriptions` — это и есть заказы (план + статус + дата). Делаем страницу:
 
-Файл: `src/routes/index.tsx`, секция «ФИНАЛЬНЫЙ CTA».
+- Таблица всех подписок: email пользователя, план, статус (`active` / `cancelled` / `pending`), дата создания, дата окончания.
+- Фильтр по статусу + поиск по email.
+- Действия: «Отменить» (`status → cancelled`) и «Активировать заново».
+- Серверная функция `listAllOrders` + `updateOrderStatus` в `src/lib/admin.functions.ts` (через `supabaseAdmin`, с проверкой роли admin).
+- Ссылка «Заказы» в навбаре рядом с «Гениями» и «Пользователями» — только для админов.
 
-Заменить `variant="outline"` на `variant="ghost"` у кнопки «К тарифам», чтобы убрать белый базовый фон. Стеклянный вид сохраняем через существующий `glass-panel-dark`, белый текст и бордер уже заданы.
+### 2. Полное управление каталогом Гениев — расширяем `/admin/geniuses`
 
-Было:
-```tsx
-<Button size="lg" variant="outline" className="glass-panel-dark border-white/30 text-white hover:bg-white/20 hover:text-white">
-  К тарифам
-</Button>
-```
+**Изменения в БД (миграция):**
+- В таблицу `geniuses` добавляем колонку `image_url text` (nullable) — путь к фото в Storage.
+- Создаём публичный bucket `genius-images` с RLS:
+  - SELECT — всем (публичный bucket для отображения на сайте).
+  - INSERT/UPDATE/DELETE — только admin (`has_role(auth.uid(), 'admin')`).
 
-Станет:
-```tsx
-<Button size="lg" variant="ghost" className="glass-panel-dark border border-white/30 text-white hover:bg-white/20 hover:text-white">
-  К тарифам
-</Button>
-```
+**Расширяем UI админки:**
+- Кнопка «Добавить Гения» — форма с полями: имя, slug, эмодзи, категория, описание, ссылка ChatGPT, фото.
+- В каждой строке существующего Гения:
+  - Редактирование **всех** полей: имя, slug, эмодзи, **категория** (сейчас не редактируется), описание, ссылка, фото.
+  - Загрузка фото с компьютера (`<input type="file">` → upload в `genius-images` → сохраняем `image_url`).
+  - Превью текущего фото + кнопка «Удалить фото».
+  - Кнопка «Удалить Гения» с подтверждением (отзывает доступ у всех пользователей, у кого этот slug в `user_genius_access`).
+- Категория — выпадающий список из существующих категорий + возможность ввести новую.
 
-Никаких других изменений: вёрстка, отступы, размеры, остальные кнопки и тёмная тема не затрагиваются.
+**Новые серверные функции в `admin.functions.ts`:**
+- `createGenius` — INSERT в `geniuses`.
+- `deleteGenius` — DELETE из `geniuses` (+ каскадно отзываем `user_genius_access`).
+- Расширяем `updateGenius`: добавляем `slug`, `category`, `image_url`.
+- `uploadGeniusImage` — серверная функция: принимает base64 файла, загружает в bucket через `supabaseAdmin.storage`, возвращает public URL. (Альтернатива — прямой upload с клиента, но тогда нужен auth-aware upload; через серверную функцию проще и безопаснее.)
+
+### 3. Отображение фото на сайте (не меняя дизайн)
+
+- В `GeniusCard.tsx`: если у Гения есть `image_url` — показываем фото; если нет — текущий эмодзи (фолбэк). Существующие карточки без фото выглядят как сейчас.
+- В `public-data.functions.ts` `getPublicCatalog` — добавить `image_url` в SELECT.
+
+## Технические детали
+
+**Файлы, которые изменятся:**
+- `supabase/migrations/<новая>` — `image_url` + storage bucket + RLS политики.
+- `src/lib/admin.functions.ts` — добавить `listAllOrders`, `updateOrderStatus`, `createGenius`, `deleteGenius`, `uploadGeniusImage`; расширить `updateGenius`.
+- `src/lib/public-data.functions.ts` — добавить `image_url` в выборку.
+- `src/routes/_authenticated/admin/orders.tsx` — новая страница.
+- `src/routes/_authenticated/admin/geniuses.tsx` — добавить форму создания, расширить редактирование, удаление, загрузку фото.
+- `src/components/Navbar.tsx` — пункт «Заказы» для админа.
+- `src/components/GeniusCard.tsx` — поддержка `image_url`.
+
+**Что НЕ меняем:**
+- Дизайн/верстку публичных страниц.
+- Логику тарифов, оплаты, выдачи доступа.
+- Регистрацию/вход.
+- RLS политики на `subscriptions` и `user_genius_access` (правила безопасности из прошлого фикса остаются).
+
+## Открытый вопрос
+
+Сейчас в `subscriptions` нет суммы оплаты и платёжного провайдера — в админке «Заказов» показывать только план/статус/даты, без суммы. Если нужно добавлять цену в заказ — это отдельная задача (потребует расширения схемы и интеграции с платёжкой). Скажите, если нужно — добавлю.

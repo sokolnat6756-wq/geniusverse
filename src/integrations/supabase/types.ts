@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           emoji: string
           id: string
+          image_url: string | null
           name: string
           short_description: string
           slug: string
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           emoji: string
           id?: string
+          image_url?: string | null
           name: string
           short_description: string
           slug: string
@@ -41,6 +43,7 @@ export type Database = {
           created_at?: string
           emoji?: string
           id?: string
+          image_url?: string | null
           name?: string
           short_description?: string
           slug?: string
