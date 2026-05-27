@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PlanCard } from "@/components/PlanCard";
 import { useAuth } from "@/lib/auth-context";
 import { getPublicCatalog } from "@/lib/public-data.functions";
+import { getPreselectedGenius } from "@/lib/preselected-genius";
 
 const catalogQuery = queryOptions({
   queryKey: ["public-catalog"],
