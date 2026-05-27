@@ -55,9 +55,13 @@ function DashboardPage() {
     );
   }
 
-  const { profile, subscription, geniuses, selectedOneGenius } = data;
+  const { profile, subscription, pendingSubscription, geniuses, selectedOneGenius } = data;
   const planSlug = subscription?.plan_slug ?? null;
   const planLabel = planSlug ? PLAN_LABELS[planSlug] ?? planSlug : "Нет активного тарифа";
+  const pendingPlanLabel = pendingSubscription
+    ? PLAN_LABELS[pendingSubscription.plan_slug] ?? pendingSubscription.plan_slug
+    : null;
+  const showPending = !subscription && !!pendingSubscription;
 
   const handleChoose = async (slug: string) => {
     setPicking(slug);
