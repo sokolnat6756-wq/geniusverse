@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { getIsAdmin } from "@/lib/admin.functions";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Navbar() {
   const { session, loading } = useAuth();
@@ -28,12 +29,15 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-white/50 shadow-[0_1px_0_0_rgba(255,255,255,0.6)]">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="group flex items-center gap-2 font-semibold">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft transition-transform duration-300 group-hover:scale-105">
-            <Sparkles className="h-5 w-5" />
-          </span>
-          <span className="text-lg tracking-tight">Академия Гениев</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/" className="group flex items-center gap-2 font-semibold">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-hero text-primary-foreground shadow-soft transition-transform duration-300 group-hover:scale-105">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <span className="text-lg tracking-tight">Академия Гениев</span>
+          </Link>
+        </div>
 
         <nav className="hidden items-center gap-1 md:flex">
           <Link to="/" className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
