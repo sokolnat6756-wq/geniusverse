@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { geniusSlugsForPlan, isGeniusUnlocked, type PlanSlug } from "@/lib/access";
+import { notifyAdmin } from "@/lib/telegram.server";
 
 export const getDashboardData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -117,6 +118,39 @@ export const activateMockSubscription = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Fire-and-forget Telegram notification to admin
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name,email")
+        .eq("id", userId)
+        .maybeSingle();
+      const { data: plan } = await supabaseAdmin
+        .from("plans")
+        .select("name,price")
+        .eq("slug", data.planSlug)
+        .maybeSingle();
+
+      const escape = (s: string) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const name = escape(profile?.full_name || "—");
+      const email = escape(profile?.email || "—");
+      const planName = escape(plan?.name || data.planSlug);
+      const priceStr = plan?.price ? `${plan.price.toLocaleString("ru-RU")} ₽` : "—";
+
+      await notifyAdmin(
+        `🔔 <b>Новая заявка</b>\n\n` +
+          `👤 <b>Имя:</b> ${name}\n` +
+          `📧 <b>Email:</b> ${email}\n` +
+          `📦 <b>Тариф:</b> ${planName}\n` +
+          `💰 <b>Цена:</b> ${priceStr}\n` +
+          `🆔 <code>${userId}</code>`,
+      );
+    } catch (e) {
+      console.error("[telegram] notify failed:", e);
+    }
+
     return { subscription: sub };
   });
 
