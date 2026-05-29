@@ -59,7 +59,7 @@ function RegisterPage() {
       },
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(translateAuthError(error)); return; }
     toast.success("Аккаунт создан!");
     // session may not be set yet if email confirmation is required; effect handles redirect when it is
   };

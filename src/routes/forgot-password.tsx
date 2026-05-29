@@ -24,7 +24,7 @@ function ForgotPage() {
       redirectTo: typeof window !== "undefined" ? `${window.location.origin}/login` : undefined,
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(translateAuthError(error)); return; }
     setSent(true);
   };
 
