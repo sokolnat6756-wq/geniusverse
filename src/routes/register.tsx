@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 import { useAuth } from "@/lib/auth-context";
 
 
@@ -59,7 +60,7 @@ function RegisterPage() {
       },
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(translateAuthError(error)); return; }
     toast.success("Аккаунт создан!");
     // session may not be set yet if email confirmation is required; effect handles redirect when it is
   };
