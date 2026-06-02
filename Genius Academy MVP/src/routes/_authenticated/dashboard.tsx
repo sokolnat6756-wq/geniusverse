@@ -1,0 +1,251 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { GeniusCard } from "@/components/GeniusCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useState } from "react";
+import { toast } from "sonner";
+import { getDashboardData, selectOneGenius } from "@/lib/subscription.functions";
+import { getIsAdmin } from "@/lib/admin.functions";
+import { isGeniusUnlocked, PLAN_LABELS } from "@/lib/access";
+import { getGeniusVisual } from "@/lib/genius-icons";
+import { getPreselectedGenius, clearPreselectedGenius } from "@/lib/preselected-genius";
+import { useEffect, useRef } from "react";
+
+export const Route = createFileRoute("/_authenticated/dashboard")({
+  head: () => ({ meta: [{ title: "Кабинет — Академия Гениев" }] }),
+  component: DashboardPage,
+});
+
+function DashboardPage() {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const getData = useServerFn(getDashboardData);
+  const chooseGenius = useServerFn(selectOneGenius);
+  const isAdminFn = useServerFn(getIsAdmin);
+
+  const { data: adminData, isLoading: adminLoading } = useQuery({
+    queryKey: ["is-admin-dashboard"],
+    queryFn: () => isAdminFn(),
+  });
+
+  useEffect(() => {
+    if (adminData?.isAdmin) {
+      navigate({ to: "/admin/orders" });
+    }
+  }, [adminData, navigate]);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => getData(),
+    enabled: adminData ? !adminData.isAdmin : false,
+  });
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [picking, setPicking] = useState<string | null>(null);
+  const autoApplied = useRef(false);
+
+  useEffect(() => {
+    if (autoApplied.current) return;
+    if (!data) return;
+    const { subscription, selectedOneGenius, geniuses } = data;
+    if (subscription?.plan_slug !== "one_genius") return;
+    if (selectedOneGenius) {
+      clearPreselectedGenius();
+      return;
+    }
+    const slug = getPreselectedGenius();
+    if (!slug) return;
+    if (!geniuses.some((g) => g.slug === slug)) return;
+    autoApplied.current = true;
+    (async () => {
+      try {
+        await chooseGenius({ data: { geniusSlug: slug } });
+        clearPreselectedGenius();
+        await qc.invalidateQueries({ queryKey: ["dashboard"] });
+        toast.success("Ваш Гений активирован!");
+      } catch {
+        autoApplied.current = false;
+      }
+    })();
+  }, [data, chooseGenius, qc]);
+
+  if (adminLoading || adminData?.isAdmin || isLoading || !data) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const { profile, subscription, pendingSubscription, geniuses, selectedOneGenius } = data;
+  const planSlug = subscription?.plan_slug ?? null;
+  const planLabel = planSlug ? PLAN_LABELS[planSlug] ?? planSlug : "Нет активного тарифа";
+  const pendingPlanLabel = pendingSubscription
+    ? PLAN_LABELS[pendingSubscription.plan_slug] ?? pendingSubscription.plan_slug
+    : null;
+  const showPending = !subscription && !!pendingSubscription;
+
+  const handleChoose = async (slug: string) => {
+    setPicking(slug);
+    try {
+      await chooseGenius({ data: { geniusSlug: slug } });
+      await qc.invalidateQueries({ queryKey: ["dashboard"] });
+      setPickerOpen(false);
+      toast.success("Гений выбран!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ошибка");
+    } finally {
+      setPicking(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+        {/* Header */}
+        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-hero p-8 md:p-10 text-primary-foreground shadow-elegant">
+          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-white/15 blur-3xl" aria-hidden />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" aria-hidden />
+          <div className="relative">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="text-sm opacity-80">Добро пожаловать</p>
+                <h1 className="text-2xl md:text-3xl font-bold mt-1 tracking-tight">
+                  {profile?.full_name || profile?.email || "Гений"}
+                </h1>
+                <p className="opacity-80 text-sm mt-1">{profile?.email}</p>
+              </div>
+              <div className="glass-panel-dark rounded-2xl px-5 py-4 text-right">
+                <p className="text-xs uppercase tracking-wider opacity-80">Текущий тариф</p>
+                <p className="text-lg font-semibold mt-1">{planLabel}</p>
+                {subscription && (
+                  <p className="text-xs opacity-80 mt-0.5">
+                    Активирован {new Date(subscription.created_at).toLocaleDateString("ru-RU")}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {showPending && (
+              <div className="mt-6 glass-panel-dark rounded-2xl p-4">
+                <p className="text-sm font-medium">
+                  Ваша заявка на тариф «{pendingPlanLabel}» ожидает подтверждения администратором.
+                </p>
+                <p className="text-xs opacity-80 mt-1">
+                  Доступ к Гениям откроется автоматически, как только админ подтвердит заявку.
+                </p>
+              </div>
+            )}
+
+            {!subscription && !showPending && (
+              <div className="mt-6">
+                <Link to="/pricing">
+                  <Button variant="secondary" size="lg" className="active:scale-[0.98] transition-transform">
+                    Выбрать тариф <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+
+            {subscription?.plan_slug === "one_genius" && !selectedOneGenius && (
+              <div className="mt-6 glass-panel-dark rounded-2xl p-4">
+                <p className="text-sm">Вы ещё не выбрали своего Гения для тарифа «Один Гений».</p>
+                <Button onClick={() => setPickerOpen(true)} variant="secondary" size="sm" className="mt-3">
+                  <Sparkles className="mr-2 h-4 w-4" /> Выбрать Гения
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Geniuses */}
+        <div className="mt-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Ваши Гении</h2>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                Доступные ассистенты выделены, остальные — открываются при апгрейде тарифа.
+              </p>
+            </div>
+            {planSlug !== "full" && (
+              <Link to="/pricing" className="hidden md:block">
+                <Button variant="outline">Открыть полный доступ</Button>
+              </Link>
+            )}
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {geniuses.map((g) => (
+              <GeniusCard
+                key={g.id}
+                genius={g}
+                unlocked={isGeniusUnlocked(g, planSlug, selectedOneGenius)}
+                onUnlockClick={() => navigate({ to: "/pricing" })}
+              />
+            ))}
+          </div>
+
+          {planSlug !== "full" && (
+            <div className="relative mt-10 overflow-hidden rounded-[2rem] bg-gradient-mesh p-1">
+              <div className="glass-panel-strong rounded-[1.85rem] p-8 text-center">
+                <h3 className="text-xl font-bold tracking-tight">Хотите ещё больше?</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Откройте полный доступ ко всем Гениям и будущим обновлениям.
+                </p>
+                <Link to="/pricing" className="inline-block mt-4">
+                  <Button className="bg-gradient-hero text-primary-foreground shadow-soft active:scale-[0.98] transition-transform">
+                    Открыть полный доступ
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Выберите своего Гения</DialogTitle>
+            <DialogDescription>
+              Доступен один ассистент. В любой момент можно расширить доступ через тарифы.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2 max-h-[60vh] overflow-y-auto pr-1">
+            {geniuses.map((g) => {
+              const { Icon, gradientClass } = getGeniusVisual(g.slug, g.category);
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => handleChoose(g.slug)}
+                  disabled={picking !== null}
+                  className="text-left rounded-xl border p-4 transition-all hover:border-primary hover:shadow-soft disabled:opacity-50"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${gradientClass} shadow-soft ring-1 ring-white/50`}>
+                      <Icon className="h-6 w-6 text-white" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="font-semibold">{g.name}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{g.short_description}</div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Footer />
+    </div>
+  );
+}
